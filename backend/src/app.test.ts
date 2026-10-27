@@ -1,13 +1,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import type { AddressInfo } from 'node:net';
-import { createApp } from './app.js';
+import { startTestServer } from './test-support.js';
 
 test('health endpoint returns ok', async () => {
-  const server = createApp({}).listen(0);
+  const server = startTestServer();
   try {
-    const { port } = server.address() as AddressInfo;
-    const res = await fetch(`http://127.0.0.1:${port}/api/v1/health`);
+    const res = await fetch(`${server.baseUrl}/api/v1/health`);
     assert.equal(res.status, 200);
     assert.deepEqual(await res.json(), { status: 'ok' });
   } finally {
