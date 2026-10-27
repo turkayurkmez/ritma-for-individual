@@ -2,6 +2,7 @@ import express from 'express';
 import type { SessionService } from './auth/session-service.js';
 import { notFound } from './domain/errors.js';
 import { createAuthRouter } from './http/auth-routes.js';
+import { createCustomerRouter } from './http/customer-routes.js';
 import { errorHandler } from './http/error-handler.js';
 import type { AppointmentService } from './services/appointment-service.js';
 import type { CustomerService } from './services/customer-service.js';
@@ -22,6 +23,7 @@ export function createApp(deps: AppDeps): express.Express {
     res.json({ status: 'ok' });
   });
   app.use('/api/v1/auth', createAuthRouter(deps.sessions, deps.production));
+  app.use('/api/v1/customers', createCustomerRouter(deps.sessions, deps.customers));
 
   app.use('/api', (_req, _res, next) => next(notFound('Adres bulunamadı.')));
   app.use(errorHandler);
