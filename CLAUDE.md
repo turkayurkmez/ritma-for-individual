@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Proje Özeti
 
-Ritma, serbest çalışan hizmet sağlayıcılar (danışman, koç, eğitmen, diyetisyen vb.) için planlanan bir randevu ve müşteri takip sistemidir. Şu an yalnızca tanıtım sayfası var: hero + uygulama önizlemesi, sorun ve çözüm, nasıl çalışır, erken erişim formu, alt bilgi. Amaç ilgi ölçmek (erken erişim kayıtları). Arayüz metinleri Türkçedir.
+Ritma, serbest çalışan hizmet sağlayıcılar (danışman, koç, eğitmen, diyetisyen vb.) için planlanan bir randevu ve müşteri takip sistemidir. Şu an iki parça var: `web/` altında tanıtım sayfası (amaç ilgi ölçmek) ve `backend/` altında bellek tabanlı API (yönetim paneli arayüzü henüz yok). Arayüz metinleri Türkçedir.
 
 ## Teknoloji
 
@@ -37,6 +37,9 @@ Ritma, serbest çalışan hizmet sağlayıcılar (danışman, koç, eğitmen, di
 - API `/api/v1` altındadır. Oturum jetonu `Authorization: Bearer <token>` başlığı ya da `ritma_session` çerezi ile gelir. Hata biçimi: `{ "error": { "code", "message" } }` (`validation_error` 400, `unauthorized` 401, `not_found` 404, `conflict` 409).
 - Yeni bir rota eklenince `api-contract/openapi.yaml` güncellenir (`contract.test.ts` rota listesini kontrol eder).
 - Backend'i TDD ile geliştir: önce başarısız test, sonra kod.
+- `npm test` (tsx) tipleri denetlemez ve test dosyaları `tsc` derlemesine girmez; tip hatası için testten ayrı `npm run build` çalıştır.
+- HTTP testleri `src/test-support.ts` içindeki `startTestServer()` / `buildTestDeps()` ile yazılır (gerçek sunucu + fetch, mock yok).
+- Tırnak/apostrof içeren uzun dosyaları `cat <<EOF` ile değil Write aracıyla yaz; kabuk komutu ayrıştırma hatasıyla hiç dosya yazmadan çökebilir.
 
 ## Kurallar
 
@@ -52,3 +55,8 @@ Ritma, serbest çalışan hizmet sağlayıcılar (danışman, koç, eğitmen, di
 - Türkçe dosya veya klasör adı verme.
 - Sormadan framework veya kütüphane (React, Tailwind, jQuery vb.) ekleme.
 - Sormadan commit atma veya push yapma.
+
+## Çalışma düzeni
+
+- Özellik çalışması ayrı bir branch'te yapılır (`feat/...`) ve PR ile `main`'e girer; `main`'e doğrudan commit atma. Commit/push izni oturumda açıkça verilmedikçe sorulur.
+- Büyük işler `docs/superpowers/specs/` (tasarım) → `docs/superpowers/plans/` (plan) sırasıyla yürür; `.superpowers/` git'in dışında tutulan geçici çalışma alanıdır.
