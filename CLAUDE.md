@@ -8,34 +8,44 @@ Ritma, serbest çalışan hizmet sağlayıcılar (danışman, koç, eğitmen, di
 
 ## Teknoloji
 
-- Şimdilik sadece HTML, CSS ve JavaScript kullanılır.
-- Framework, derleme aracı veya paket yöneticisi yoktur.
-- Mevcut sayfa tek dosyadır (`index.html`), stiller dosyanın içindedir.
+- Ön yüz (`web/`) sadece HTML, CSS ve JavaScript kullanır. Backend (`backend/`) Node.js + Express + TypeScript ile yazılır.
+- Ön yüzde framework, derleme aracı veya paket yöneticisi yoktur.
+- Mevcut sayfa tek dosyadır (`web/index.html`), stiller dosyanın içindedir.
 
 ## Tasarım
 
-- Yön: "keskin ve teknik" (indigo vurgu, 2px kenarlık, sert gölge, monospace başlıklar). Değerler `index.html` içindeki `:root` değişkenlerinde.
+- Yön: "keskin ve teknik" (indigo vurgu, 2px kenarlık, sert gölge, monospace başlıklar). Değerler `web/index.html` içindeki `:root` değişkenlerinde.
 - Tasarım belgesi: `docs/superpowers/specs/`, uygulama planı: `docs/superpowers/plans/`.
 
 ## Komutlar
 
-Kurulum, derleme, lint veya test komutu yoktur. Doğrulama için:
+Ön yüz için kurulum, derleme, lint veya test komutu yoktur. Doğrulama için:
 
-- Görsel kontrol: `chrome.exe --headless=new --screenshot=<dosya.png> --window-size=1200,900 file:///.../index.html`. Başsız Chrome 500px'ten dar pencere açmaz; telefon genişliğini 360px'lik bir `<iframe>` içinde ölç.
-- Koyu tema için `--blink-settings` işe yaramadı; `prefers-color-scheme` satırını `@media all` yapan geçici bir kopya kullan.
+- Görsel kontrol: `chrome.exe --headless=new --screenshot=<dosya.png> --window-size=1200,900 file:///.../web/index.html`. Başsız Chrome 500px'ten dar pencere açmaz; telefon genişliğini 360px'lik bir `<iframe>` içinde ölç.
 - `validateSignup` / `sendSignup` global fonksiyonlar; `node` ile `vm` içinde çalıştırılabilir. Geçici betikleri projeye değil scratchpad'e koy.
 
-- Sayfayı görmek için `index.html` dosyasını tarayıcıda aç.
+- Sayfayı görmek için `web/index.html` dosyasını tarayıcıda aç.
 - İstersen yerel sunucu ile de açabilirsin: `python -m http.server 8000`, sonra `http://localhost:8000`.
+
+## Backend
+
+`backend/` Node.js + Express + TypeScript API'sidir; veriler bellekte tutulur (sunucu yeniden başlayınca silinir). Tasarım: `docs/superpowers/specs/2026-10-27-ritma-backend-design.md`, API sözleşmesi: `api-contract/openapi.yaml`.
+
+- Komutlar (`backend/` içinde): `npm test` (node:test + tsx), `npm run dev` (izleme modunda çalıştırır), `npm run build` (`dist/`), `npm start`.
+- Sunucu `web/` klasörünü de servis eder: `npm run dev`, sonra `http://localhost:3000`. `PORT` ile port değişir.
+- Demo hesaplar: `ayse@ritma.demo` / `demo-ayse-123` ve `mehmet@ritma.demo` / `demo-mehmet-123`. `DEMO_ACCOUNTS_ENABLED=true|false` ile açılır/kapanır; `NODE_ENV=production` iken varsayılan kapalıdır.
+- API `/api/v1` altındadır. Oturum jetonu `Authorization: Bearer <token>` başlığı ya da `ritma_session` çerezi ile gelir. Hata biçimi: `{ "error": { "code", "message" } }` (`validation_error` 400, `unauthorized` 401, `not_found` 404, `conflict` 409).
+- Yeni bir rota eklenince `api-contract/openapi.yaml` güncellenir (`contract.test.ts` rota listesini kontrol eder).
+- Backend'i TDD ile geliştir: önce başarısız test, sonra kod.
 
 ## Kurallar
 
 - Dosya ve klasör adları İngilizce olur (örnek: `index.html`, `styles.css`, `script.js`).
-- Sadece HTML, CSS ve JS yaz. Başka teknoloji gerekirse önce kullanıcıya sor.
-- Renkler `:root` içindeki CSS değişkenlerinden gelir. Koyu tema `prefers-color-scheme: dark` ile ayarlanır.
+- Ön yüz (`web/`) için sadece HTML, CSS ve JS yaz. Backend (`backend/`) TypeScript ile yazılır. Başka teknoloji gerekirse önce kullanıcıya sor.
+- Renkler `:root` içindeki CSS değişkenlerinden gelir. Sayfa şu an yalnızca açık temadadır (koyu tema bloğu PR #1 ile kaldırıldı).
 - Sayfa telefon ekranında da düzgün görünmelidir.
 - Kullanıcıya görünen metinler Türkçe, açıklamalar sade bir dille yazılır.
-- Form `index.html` sonundaki `FORM_ENDPOINT` sabitine POST eder. Sabit boşken form hata gösterir (kayıt kaybolmasın diye başarı göstermez). Form servisi seçilmedi; yayından önce adresi yazın. Harici servis eklemek için önce sor.
+- Form `web/index.html` sonundaki `FORM_ENDPOINT` sabitine POST eder. Sabit boşken form hata gösterir (kayıt kaybolmasın diye başarı göstermez). Form servisi seçilmedi; yayından önce adresi yazın. Harici servis eklemek için önce sor.
 
 ## Yasaklar
 
