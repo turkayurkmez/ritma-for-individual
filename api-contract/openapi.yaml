@@ -1,0 +1,355 @@
+openapi: 3.0.3
+info:
+  title: Ritma API
+  version: 0.1.0
+  description: >
+    Hizmet sağlayıcılar için randevu ve müşteri takip API'si. Web çerezle (ritma_session),
+    mobil istemciler `Authorization: Bearer <token>` başlığıyla aynı oturum jetonunu kullanır.
+    Tarih YYYY-MM-DD, saat HH:mm (24 saat, tek yerel saat). Hata mesajları Türkçedir.
+servers:
+  - url: /
+security:
+  - bearerAuth: []
+  - cookieAuth: []
+paths:
+  /api/v1/health:
+    get:
+      summary: Sağlık kontrolü
+      security: []
+      responses:
+        '200':
+          description: Sunucu çalışıyor.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, enum: [ok] }
+  /api/v1/auth/login:
+    post:
+      summary: Giriş yap
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string }
+                password: { type: string }
+      responses:
+        '200':
+          description: Giriş başarılı; jeton ayrıca HttpOnly çerez olarak da verilir.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token: { type: string }
+                  user: { $ref: '#/components/schemas/User' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /api/v1/auth/logout:
+    post:
+      summary: Çıkış yap
+      responses:
+        '204': { description: Oturum kapatıldı. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /api/v1/auth/me:
+    get:
+      summary: Oturumdaki kullanıcı
+      responses:
+        '200':
+          description: Geçerli kullanıcı.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user: { $ref: '#/components/schemas/User' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /api/v1/customers:
+    get:
+      summary: Müşterileri listele ya da ada göre ara
+      description: Yalnızca aktif (silinmemiş) müşteriler. Arama büyük/küçük harf ve Türkçe karakter ayrımı yapmaz.
+      parameters:
+        - { name: search, in: query, required: false, schema: { type: string } }
+      responses:
+        '200':
+          description: Müşteri listesi.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  customers:
+                    type: array
+                    items: { $ref: '#/components/schemas/Customer' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      summary: Müşteri ekle
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CustomerInput' }
+      responses:
+        '201':
+          description: Oluşturuldu.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  customer: { $ref: '#/components/schemas/Customer' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /api/v1/customers/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      summary: Müşteriyi getir
+      responses:
+        '200':
+          description: Müşteri.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  customer: { $ref: '#/components/schemas/Customer' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      summary: Müşteriyi güncelle (verilen alanlar)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CustomerPatch' }
+      responses:
+        '200':
+          description: Güncellendi.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  customer: { $ref: '#/components/schemas/Customer' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      summary: Müşteriyi sil (soft delete)
+      description: Müşteri listeden kalkar; randevuları erişilebilir kalır.
+      responses:
+        '204': { description: Silindi. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /api/v1/appointments:
+    get:
+      summary: Tarih aralığındaki randevuları listele
+      description: >
+        Günlük, haftalık ve aylık görünümler aynı uç noktayı kullanır (günlük için from = to).
+        Aralık en fazla 366 gün olabilir.
+      parameters:
+        - { name: from, in: query, required: true, schema: { type: string, format: date } }
+        - { name: to, in: query, required: true, schema: { type: string, format: date } }
+      responses:
+        '200':
+          description: Randevular; tarih ve başlangıç saatine göre sıralı.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  appointments:
+                    type: array
+                    items: { $ref: '#/components/schemas/Appointment' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      summary: Randevu oluştur
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AppointmentInput' }
+      responses:
+        '201':
+          description: Oluşturuldu.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  appointment: { $ref: '#/components/schemas/Appointment' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /api/v1/appointments/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      summary: Randevuyu getir
+      responses:
+        '200':
+          description: Randevu.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  appointment: { $ref: '#/components/schemas/Appointment' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      summary: Randevuyu güncelle (verilen alanlar)
+      description: İptal, durumu `cancelled` yapan bir güncellemedir ve saati boşaltır.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AppointmentPatch' }
+      responses:
+        '200':
+          description: Güncellendi.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  appointment: { $ref: '#/components/schemas/Appointment' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+    delete:
+      summary: Randevuyu kalıcı olarak sil
+      responses:
+        '204': { description: Silindi. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: ritma_session
+  responses:
+    ValidationError:
+      description: Geçersiz girdi.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Unauthorized:
+      description: Oturum yok ya da geçersiz.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    NotFound:
+      description: Kayıt yok ya da başka bir kullanıcıya ait.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Conflict:
+      description: Aynı saat aralığında başka bir aktif randevu var.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              enum: [validation_error, unauthorized, not_found, conflict, server_error]
+            message: { type: string }
+    User:
+      type: object
+      properties:
+        id: { type: string }
+        email: { type: string }
+        displayName: { type: string }
+    Gender:
+      type: string
+      description: Arayüzde kadın / erkek / diğer / belirtmek istemiyorum olarak gösterilir.
+      enum:
+        - female
+        - male
+        - other
+        - undisclosed
+    AppointmentStatus:
+      type: string
+      description: Arayüzde planlandı / tamamlandı / iptal olarak gösterilir.
+      enum:
+        - scheduled
+        - completed
+        - cancelled
+    CustomerInput:
+      type: object
+      required: [firstName, lastName, birthDate, gender]
+      properties:
+        firstName: { type: string }
+        lastName: { type: string }
+        birthDate: { type: string, format: date, description: Gelecekte olamaz. }
+        gender: { $ref: '#/components/schemas/Gender' }
+    CustomerPatch:
+      type: object
+      description: En az bir alan verilmelidir.
+      properties:
+        firstName: { type: string }
+        lastName: { type: string }
+        birthDate: { type: string, format: date }
+        gender: { $ref: '#/components/schemas/Gender' }
+    Customer:
+      allOf:
+        - $ref: '#/components/schemas/CustomerInput'
+        - type: object
+          properties:
+            id: { type: string }
+            userId: { type: string }
+            deletedAt: { type: string, format: date-time, nullable: true }
+    AppointmentInput:
+      type: object
+      required: [customerId, date, startTime, endTime]
+      properties:
+        customerId: { type: string }
+        date: { type: string, format: date }
+        startTime: { type: string, example: '10:00' }
+        endTime: { type: string, example: '11:00', description: Başlangıçtan sonra olmalı. }
+        status: { $ref: '#/components/schemas/AppointmentStatus' }
+        note: { type: string }
+    AppointmentPatch:
+      type: object
+      description: En az bir alan verilmelidir.
+      properties:
+        customerId: { type: string }
+        date: { type: string, format: date }
+        startTime: { type: string }
+        endTime: { type: string }
+        status: { $ref: '#/components/schemas/AppointmentStatus' }
+        note: { type: string }
+    Appointment:
+      allOf:
+        - $ref: '#/components/schemas/AppointmentInput'
+        - type: object
+          properties:
+            id: { type: string }
+            userId: { type: string }
+            customer:
+              type: object
+              description: Müşteri silinmiş olsa bile dolu gelir.
+              properties:
+                id: { type: string }
+                firstName: { type: string }
+                lastName: { type: string }
