@@ -1,6 +1,7 @@
 import express from 'express';
 import type { SessionService } from './auth/session-service.js';
 import { notFound } from './domain/errors.js';
+import { createAppointmentRouter } from './http/appointment-routes.js';
 import { createAuthRouter } from './http/auth-routes.js';
 import { createCustomerRouter } from './http/customer-routes.js';
 import { errorHandler } from './http/error-handler.js';
@@ -24,6 +25,7 @@ export function createApp(deps: AppDeps): express.Express {
   });
   app.use('/api/v1/auth', createAuthRouter(deps.sessions, deps.production));
   app.use('/api/v1/customers', createCustomerRouter(deps.sessions, deps.customers));
+  app.use('/api/v1/appointments', createAppointmentRouter(deps.sessions, deps.appointments));
 
   app.use('/api', (_req, _res, next) => next(notFound('Adres bulunamadı.')));
   app.use(errorHandler);
