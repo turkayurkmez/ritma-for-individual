@@ -28,6 +28,7 @@ export function createApp(deps: AppDeps): express.Express {
   app.use('/api/v1/appointments', createAppointmentRouter(deps.sessions, deps.appointments));
 
   app.use('/api', (_req, _res, next) => next(notFound('Adres bulunamadı.')));
+  if (deps.staticDir) app.use(express.static(deps.staticDir));
   app.use(errorHandler);
   return app;
 }
