@@ -1,0 +1,38 @@
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgba(15, 18, 34, .55);
+}
+.modal {
+  width: 100%;
+  max-width: 28rem;
+  max-height: 100%;
+  overflow: auto;
+  padding: 1.5rem;
+  border: var(--bw) solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+.modal-title { margin-bottom: 1rem; font-family: var(--font-head); font-size: 1.3rem; }
+.modal-message { margin-bottom: 1.25rem; }
+.modal-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .75rem; }
+.modal-button {
+  padding: .6rem 1.1rem;
+  border: var(--bw) solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--fg);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.modal-button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.modal-button:disabled { opacity: .6; cursor: not-allowed; }
+.modal-button-primary { background: var(--accent); border-color: var(--border); color: #fff; }
+.modal-button-primary:hover:not(:disabled) { background: var(--accent-hover); }
+.modal-button-danger { background: var(--danger); color: #fff; }
