@@ -9,18 +9,21 @@ Ritma, serbest çalışan hizmet sağlayıcılar (danışman, koç, eğitmen, di
 ## Teknoloji
 
 - Ön yüz (`frontend/`) React + TypeScript + Vite ile yazılır (tasarım: `docs/superpowers/specs/2026-11-03-ritma-frontend-design.md`). Backend (`backend/`) Node.js + Express + TypeScript ile yazılır.
-- Ön yüz bağımlılıkları yalnızca: `react`, `react-dom`, `react-router`; geliştirme için `vite`, `@vitejs/plugin-react`, `typescript`, `vitest`, `@testing-library/react`, `jsdom`. Listedışı kütüphane için önce sor.
+- Ön yüz bağımlılıkları yalnızca: `react`, `react-dom`, `react-router`; geliştirme için `vite`, `@vitejs/plugin-react`, `typescript`, `vitest`, `@testing-library/react`, `jsdom`, `@types/react`, `@types/react-dom`. Listedışı kütüphane (örn. `user-event`, `jest-dom`, `@types/node`) için önce sor.
 
 ## Ön yüz rotaları
 
 - `/` tanıtım, `/giris` giriş. `/panel` (günlük), `/panel/hafta`, `/panel/ay`, `/panel/musteriler` giriş ister (`RequireAuth`; oturum yoksa `/giris`'e yönlenir).
 - Günlük, haftalık ve aylık görünüm gün/hafta/ayı `?tarih=YYYY-MM-DD` sorgu parametresinden okur (yoksa bugün); haftalık ve aylıkta bir güne tıklamak `/panel?tarih=...`'e gider. Hafta Pazartesi'den başlar.
+- Yerleşim (`frontend/src/`): `api/` (istemci ve uç noktalar), `auth/` (oturum), `lib/` (tarih, etiket, `useApi`), `components/` (ortak modal), `pages/<ekran>/` (sayfa + kendi `.css`'i ve testi).
+- Testler `fireEvent` ile yazılır; ağ `test-utils.tsx` içindeki `stubFetch` ile taklit edilir, ekranlar `renderApp` ile çizilir. Dosya okuyan testler Vite `?raw` ile yazılır (`node:fs` yok).
+- Gecikmeli (debounce) testlerde `vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })` yalnızca yazma/ilerletme adımında aç, `findBy…`'dan önce `vi.useRealTimers()` ile kapat (aksi halde bekleme asılı kalır).
+- `renderApp` her çizimde `GET /api/v1/auth/me` de atar; istek sayısı/sırası denetlerken `calls`'ı URL'ye göre süz.
 - Tarih yardımcıları `frontend/src/lib/date.ts` içindedir; tarih metni üretmek/çözmek için `toISOString()`/`Date.parse` kullanma (gün kayar).
 
 ## Tasarım
 
 - Yön: "keskin ve teknik" (indigo vurgu, 2px kenarlık, sert gölge, monospace başlıklar). Değerler `frontend/src/styles/tokens.css` içindeki `:root` değişkenlerinde. Stiller HTML/JSX dışında ayrı `.css` dosyalarındadır (sayfa/bileşen yanında, `landing-…` gibi önekli sınıf adlarıyla).
-- Tasarım belgesi: `docs/superpowers/specs/`, uygulama planı: `docs/superpowers/plans/`.
 
 ## Komutlar
 
@@ -45,7 +48,7 @@ Ritma, serbest çalışan hizmet sağlayıcılar (danışman, koç, eğitmen, di
 - Tek test dosyası: `node --import tsx --test src/http/docs-routes.test.ts` (`backend/` içinde). TDD'de kırmızı adımını bununla doğrula, bitirmeden önce tüm `npm test`'i çalıştır.
 - HTTP testleri `src/test-support.ts` içindeki `startTestServer()` / `buildTestDeps()` ile yazılır (gerçek sunucu + fetch, mock yok).
 - Yerleşim (`backend/src/`): `http/` rotalar ve hata işleyici, `services/` iş kuralları, `repositories/memory/` bellek depoları, `auth/` kimlik sağlayıcı ve oturum, `domain/` ortak tipler ve hatalar. Bağımlılıklar `AppDeps` (`app.ts`) ile verilir; gerçek sunucu için `deps.ts` (`buildDeps`), testler için `test-support.ts` kurar. Yeni isteğe bağlı özellikler (örn. `staticDir`, `docs`) `AppDeps`'e eklenir ve `server.ts`'ten geçirilir.
-- Sunucuyu arka planda (`npm run dev`) başlatıp tarayıcıya gitmeden önce `Ritma http://localhost:3000 adresinde çalışıyor` satırını bekle (`curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/`); hazır olmadan açılan sekme hata sayfası gösterir. İş bitince sunucuyu ve sekmeyi kapat.
+- Sunucuyu arka planda (`npm run dev`) başlatıp tarayıcıya gitmeden önce `Ritma http://localhost:3000 adresinde çalışıyor` satırını bekle (`curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/`); hazır olmadan açılan sekme hata sayfası gösterir. `npm run dev` izleme modunda olduğundan dosya değişince sunucu yeniden başlar ve bellekteki oturum/veri silinir; tarayıcı testinde tekrar giriş gerekebilir. İş bitince sunucuyu ve sekmeyi kapat (Windows'ta: `netstat -ano | grep ":3000 " | grep LISTENING` ile PID'i bul, `taskkill //PID <pid> //F`).
 - Tırnak/apostrof içeren uzun dosyaları `cat <<EOF` ile değil Write aracıyla yaz; kabuk komutu ayrıştırma hatasıyla hiç dosya yazmadan çökebilir.
 
 ## Kurallar
@@ -67,3 +70,4 @@ Ritma, serbest çalışan hizmet sağlayıcılar (danışman, koç, eğitmen, di
 
 - Özellik çalışması ayrı bir branch'te yapılır (`feat/...`) ve PR ile `main`'e girer; `main`'e doğrudan commit atma.
 - Büyük işler `docs/superpowers/specs/` (tasarım) → `docs/superpowers/plans/` (plan) sırasıyla yürür; `.superpowers/` git'in dışında tutulan geçici çalışma alanıdır.
+- PR açıklaması teknik olmayan, sade Türkçe yazılır: "Ne değişti?" ve "Nasıl denedim?" başlıkları; bir görev bitince PR'ı kullanıcı merge eder, sonraki göreve ondan sonra geçilir.
