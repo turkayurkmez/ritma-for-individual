@@ -1,0 +1,29 @@
+.panel { max-width: 64rem; margin: 0 auto; padding: 1rem 1.25rem 3rem; }
+.panel-header { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem 1rem; padding-bottom: 1rem; }
+.panel-brand { margin-right: auto; font-family: var(--font-head); font-size: 1.5rem; font-weight: 700; letter-spacing: -.03em; }
+.panel-user { color: var(--muted); font-weight: 600; }
+.panel-logout {
+  padding: .5rem 1rem;
+  border: var(--bw) solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--fg);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.panel-logout:hover { background: var(--glow); }
+.panel-logout:focus-visible,
+.panel-tab:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+.panel-tabs { display: flex; flex-wrap: wrap; gap: .5rem; padding-bottom: 1rem; border-bottom: var(--bw) solid var(--border); }
+.panel-tab {
+  padding: .5rem 1rem;
+  border: var(--bw) solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--fg);
+  font-weight: 600;
+  text-decoration: none;
+}
+.panel-tab.active { background: var(--accent); color: var(--bg); box-shadow: 3px 3px 0 var(--border); }
+.panel-content { padding-top: 1.5rem; }

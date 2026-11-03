@@ -4,6 +4,8 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   plugins: [react()],
   server: {
+    // Sözleşme testi ../api-contract/openapi.yaml dosyasını okur.
+    fs: { allow: ['..'] },
     proxy: {
       '/api': 'http://localhost:3000',
       '/docs': 'http://localhost:3000',

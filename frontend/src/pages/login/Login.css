@@ -1,0 +1,18 @@
+.login { max-width: 26rem; margin: 0 auto; padding: 4rem 1.25rem; }
+.login h1 { margin-bottom: 1.5rem; font-size: 2.2rem; }
+.login-loading { padding: 4rem 1.25rem; text-align: center; }
+.login-form { display: grid; gap: 1.1rem; }
+.login-form label { display: block; margin-bottom: .35rem; font-weight: 600; }
+.login-form input {
+  width: 100%;
+  padding: .85rem 1rem;
+  border: var(--bw) solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--fg);
+  font: inherit;
+}
+.login-form input:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+.login-error { color: var(--danger); font-weight: 600; }
+.login-back { margin-top: 1.5rem; }
+.login-back a { color: var(--accent); }
