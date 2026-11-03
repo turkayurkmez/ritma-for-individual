@@ -6,6 +6,7 @@ import { createAuthRouter } from './http/auth-routes.js';
 import { createCustomerRouter } from './http/customer-routes.js';
 import { createDocsRouter, type DocsOptions } from './http/docs-routes.js';
 import { errorHandler } from './http/error-handler.js';
+import { createSpaFallback } from './http/spa-fallback.js';
 import type { AppointmentService } from './services/appointment-service.js';
 import type { CustomerService } from './services/customer-service.js';
 
@@ -33,7 +34,10 @@ export function createApp(deps: AppDeps): express.Express {
   if (deps.docs && !deps.production) app.use('/docs', createDocsRouter(deps.docs));
 
   app.use('/api', (_req, _res, next) => next(notFound('Adres bulunamadı.')));
-  if (deps.staticDir) app.use(express.static(deps.staticDir));
+  if (deps.staticDir) {
+    app.use(express.static(deps.staticDir));
+    app.use(createSpaFallback(deps.staticDir));
+  }
   app.use(errorHandler);
   return app;
 }

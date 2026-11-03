@@ -8,9 +8,9 @@ Ritma, serbest çalışan hizmet sağlayıcılar (danışman, koç, eğitmen, di
 
 ## Teknoloji
 
-- Ön yüz (`web/`) sadece HTML, CSS ve JavaScript kullanır. Backend (`backend/`) Node.js + Express + TypeScript ile yazılır.
-- Ön yüzde framework, derleme aracı veya paket yöneticisi yoktur.
-- Mevcut sayfa tek dosyadır (`web/index.html`), stiller dosyanın içindedir.
+- Ön yüz (`frontend/`) React + TypeScript + Vite ile yazılır (tasarım: `docs/superpowers/specs/2026-11-03-ritma-frontend-design.md`). Backend (`backend/`) Node.js + Express + TypeScript ile yazılır.
+- Ön yüz bağımlılıkları yalnızca: `react`, `react-dom`, `react-router`; geliştirme için `vite`, `@vitejs/plugin-react`, `typescript`, `vitest`, `@testing-library/react`, `jsdom`. Listedışı kütüphane için önce sor.
+- Tanıtım sayfası geçici olarak hâlâ `web/index.html` (HTML/CSS/JS, tek dosya, stiller içinde); `frontend/`'e taşınınca `web/` silinecek.
 
 ## Tasarım
 
@@ -19,7 +19,9 @@ Ritma, serbest çalışan hizmet sağlayıcılar (danışman, koç, eğitmen, di
 
 ## Komutlar
 
-Ön yüz için kurulum, derleme, lint veya test komutu yoktur. Doğrulama için:
+- Ön yüz (`frontend/` içinde): `npm run dev` (Vite, `http://localhost:5173`; `/api` ve `/docs` istekleri 3000'e yönlenir, backend ayrıca çalışmalı), `npm test` (Vitest), `npm run build` (tip kontrolü + `dist/`).
+
+Geçici tanıtım sayfası `web/` için kurulum, derleme, lint veya test komutu yoktur. Doğrulama için:
 
 - Görsel kontrol: `chrome.exe --headless=new --screenshot=<dosya.png> --window-size=1200,900 file:///.../web/index.html`. Başsız Chrome 500px'ten dar pencere açmaz; telefon genişliğini 360px'lik bir `<iframe>` içinde ölç.
 - `validateSignup` / `sendSignup` global fonksiyonlar; `node` ile `vm` içinde çalıştırılabilir. Geçici betikleri projeye değil scratchpad'e koy.
@@ -30,7 +32,7 @@ Ritma, serbest çalışan hizmet sağlayıcılar (danışman, koç, eğitmen, di
 `backend/` Node.js + Express + TypeScript API'sidir; veriler bellekte tutulur (sunucu yeniden başlayınca silinir). Tasarım: `docs/superpowers/specs/2026-10-27-ritma-backend-design.md`, API sözleşmesi: `api-contract/openapi.yaml`.
 
 - Komutlar (`backend/` içinde): `npm test` (node:test + tsx), `npm run dev` (izleme modunda çalıştırır), `npm run build` (`dist/`), `npm start`.
-- Sunucu `web/` klasörünü de servis eder: `npm run dev`, sonra `http://localhost:3000`. `PORT` ile port değişir.
+- Sunucu derlenmiş ön yüzü (`frontend/dist`) servis eder (önce `cd frontend && npm run build`): `npm run dev`, sonra `http://localhost:3000`. `PORT` ile port değişir. `/api` ve `/docs` dışındaki uzantısız GET istekleri `index.html` döndürür (SPA yedek rotası, `http/spa-fallback.ts`); eksik dosyalar (örn. `/assets/yok.js`) 404 kalır.
 - Demo hesaplar: `ayse@ritma.demo` / `demo-ayse-123` ve `mehmet@ritma.demo` / `demo-mehmet-123`. `DEMO_ACCOUNTS_ENABLED=true|false` ile açılır/kapanır; `NODE_ENV=production` iken varsayılan kapalıdır.
 - API `/api/v1` altındadır. Oturum jetonu `Authorization: Bearer <token>` başlığı ya da `ritma_session` çerezi ile gelir. Hata biçimi: `{ "error": { "code", "message" } }` (`validation_error` 400, `unauthorized` 401, `not_found` 404, `conflict` 409).
 - Swagger arayüzü `http://localhost:3000/docs` adresindedir (`swagger-ui-dist`, `api-contract/openapi.yaml`'ı okur). `NODE_ENV=production` iken kapalıdır.
@@ -47,7 +49,7 @@ Ritma, serbest çalışan hizmet sağlayıcılar (danışman, koç, eğitmen, di
 ## Kurallar
 
 - Dosya ve klasör adları İngilizce olur (örnek: `index.html`, `styles.css`, `script.js`).
-- Ön yüz (`web/`) için sadece HTML, CSS ve JS yaz. Backend (`backend/`) TypeScript ile yazılır. Başka teknoloji gerekirse önce kullanıcıya sor.
+- Ön yüz (`frontend/`) React + TypeScript, backend (`backend/`) TypeScript ile yazılır. Başka teknoloji gerekirse önce kullanıcıya sor.
 - Renkler `:root` içindeki CSS değişkenlerinden gelir. Sayfa şu an yalnızca açık temadadır (koyu tema bloğu PR #1 ile kaldırıldı).
 - Sayfa telefon ekranında da düzgün görünmelidir.
 - Kullanıcıya görünen metinler Türkçe, açıklamalar sade bir dille yazılır.
@@ -56,7 +58,7 @@ Ritma, serbest çalışan hizmet sağlayıcılar (danışman, koç, eğitmen, di
 ## Yasaklar
 
 - Türkçe dosya veya klasör adı verme.
-- Sormadan framework veya kütüphane (React, Tailwind, jQuery vb.) ekleme.
+- Sormadan framework veya kütüphane (Tailwind, jQuery, TanStack Query vb.; Teknoloji bölümündeki ön yüz listesi dışında her şey) ekleme.
 - Sormadan commit atma veya push yapma.
 
 ## Çalışma düzeni
