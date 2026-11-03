@@ -1,8 +1,5 @@
 import { Route, Routes } from 'react-router';
-
-function Landing() {
-  return <h1>Ritma</h1>;
-}
+import { Landing } from './pages/landing/Landing';
 
 function NotFound() {
   return <p>Sayfa bulunamadı.</p>;

@@ -10,9 +10,10 @@ function renderAt(route: string) {
   );
 }
 
-test('renders the landing placeholder at /', () => {
+test('renders the landing page at /', () => {
   renderAt('/');
-  expect(screen.getByText('Ritma')).toBeTruthy();
+  expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Ritma.');
+  expect(screen.getByRole('link', { name: 'Giriş' }).getAttribute('href')).toBe('/giris');
 });
 
 test('shows a not-found message for unknown paths', () => {
