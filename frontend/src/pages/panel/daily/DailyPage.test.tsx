@@ -190,3 +190,22 @@ test('"Sil" asks first, then calls DELETE', async () => {
   expect(await screen.findByText('Bu gün için randevu yok.')).toBeTruthy();
   expect(calls.some((c) => c.method === 'DELETE' && c.url === '/api/v1/appointments/a1')).toBe(true);
 });
+
+test('does not show the previous day\'s appointments under the new date while loading', async () => {
+  let release: () => void = () => undefined;
+  stubFetch({
+    [DAY]: () => ({ body: { appointments: [appt] } }),
+    'GET /api/v1/appointments?from=2026-11-04&to=2026-11-04': () =>
+      new Promise((resolve) => {
+        release = () => resolve({ body: { appointments: [] } });
+      }),
+  });
+  renderApp(<DailyPage />, { route: ROUTE });
+  await screen.findByText('Ayşe Kaya');
+  fireEvent.click(screen.getByRole('button', { name: 'Sonraki gün' }));
+  expect(await screen.findByText('4 Kasım 2026 Çarşamba')).toBeTruthy();
+  expect(screen.queryByText('Ayşe Kaya')).toBeNull();
+  expect(screen.getByText('Yükleniyor…')).toBeTruthy();
+  await act(async () => { release(); });
+  expect(await screen.findByText('Bu gün için randevu yok.')).toBeTruthy();
+});
