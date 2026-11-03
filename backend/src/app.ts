@@ -4,6 +4,7 @@ import { notFound } from './domain/errors.js';
 import { createAppointmentRouter } from './http/appointment-routes.js';
 import { createAuthRouter } from './http/auth-routes.js';
 import { createCustomerRouter } from './http/customer-routes.js';
+import { createDocsRouter, type DocsOptions } from './http/docs-routes.js';
 import { errorHandler } from './http/error-handler.js';
 import type { AppointmentService } from './services/appointment-service.js';
 import type { CustomerService } from './services/customer-service.js';
@@ -14,6 +15,8 @@ export interface AppDeps {
   appointments: AppointmentService;
   production: boolean;
   staticDir?: string;
+  /** Swagger arayüzü (/docs). Verilmezse ya da production iken kapalıdır. */
+  docs?: DocsOptions;
 }
 
 export function createApp(deps: AppDeps): express.Express {
@@ -26,6 +29,8 @@ export function createApp(deps: AppDeps): express.Express {
   app.use('/api/v1/auth', createAuthRouter(deps.sessions, deps.production));
   app.use('/api/v1/customers', createCustomerRouter(deps.sessions, deps.customers));
   app.use('/api/v1/appointments', createAppointmentRouter(deps.sessions, deps.appointments));
+
+  if (deps.docs && !deps.production) app.use('/docs', createDocsRouter(deps.docs));
 
   app.use('/api', (_req, _res, next) => next(notFound('Adres bulunamadı.')));
   if (deps.staticDir) app.use(express.static(deps.staticDir));

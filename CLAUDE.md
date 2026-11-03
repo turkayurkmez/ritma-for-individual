@@ -35,6 +35,7 @@ Ritma, serbest çalışan hizmet sağlayıcılar (danışman, koç, eğitmen, di
 - Sunucu `web/` klasörünü de servis eder: `npm run dev`, sonra `http://localhost:3000`. `PORT` ile port değişir.
 - Demo hesaplar: `ayse@ritma.demo` / `demo-ayse-123` ve `mehmet@ritma.demo` / `demo-mehmet-123`. `DEMO_ACCOUNTS_ENABLED=true|false` ile açılır/kapanır; `NODE_ENV=production` iken varsayılan kapalıdır.
 - API `/api/v1` altındadır. Oturum jetonu `Authorization: Bearer <token>` başlığı ya da `ritma_session` çerezi ile gelir. Hata biçimi: `{ "error": { "code", "message" } }` (`validation_error` 400, `unauthorized` 401, `not_found` 404, `conflict` 409).
+- Swagger arayüzü `http://localhost:3000/docs` adresindedir (`swagger-ui-dist`, `api-contract/openapi.yaml`'ı okur). `NODE_ENV=production` iken kapalıdır.
 - Yeni bir rota eklenince `api-contract/openapi.yaml` güncellenir (`contract.test.ts` rota listesini kontrol eder).
 - Backend'i TDD ile geliştir: önce başarısız test, sonra kod.
 - `npm test` (tsx) tipleri denetlemez ve test dosyaları `tsc` derlemesine girmez; tip hatası için testten ayrı `npm run build` çalıştır.
