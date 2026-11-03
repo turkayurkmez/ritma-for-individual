@@ -1,0 +1,26 @@
+* { box-sizing: border-box; margin: 0; }
+
+html { scroll-behavior: smooth; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+
+body {
+  background:
+    radial-gradient(60rem 30rem at 50% 0%, var(--glow), transparent 70%),
+    var(--bg);
+  color: var(--fg);
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.5;
+}
+
+.container { max-width: 64rem; margin: 0 auto; }
+
+h1, h2, h3 {
+  font-family: var(--font-head);
+  font-weight: 700;
+  letter-spacing: -.03em;
+  line-height: 1.1;
+}

@@ -1,0 +1,15 @@
+:root {
+  --bg: #f4f6fb;
+  --fg: #0f1222;
+  --muted: #55597a;
+  --accent: #4f46e5;
+  --accent-hover: #3f38c4;
+  --surface: #ffffff;
+  --border: #0f1222;
+  --glow: rgba(79, 70, 229, .12);
+  --radius: 4px;
+  --bw: 2px;
+  --shadow: 5px 5px 0 var(--border);
+  --danger: #b42318;
+  --font-head: ui-monospace, "Cascadia Code", Consolas, monospace;
+}
