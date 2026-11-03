@@ -1,0 +1,47 @@
+.daily { display: grid; gap: 1.25rem; }
+.daily-nav { display: flex; flex-wrap: wrap; gap: .5rem; }
+.daily-nav-button,
+.daily-action {
+  padding: .45rem .9rem;
+  border: var(--bw) solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--fg);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.daily-nav-button:focus-visible,
+.daily-action:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.daily-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; }
+.daily-title { font-family: var(--font-head); font-size: 1.4rem; }
+.daily-list { display: grid; gap: .75rem; list-style: none; padding: 0; margin: 0; }
+.daily-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  padding: 1rem;
+  border: var(--bw) solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+.daily-item-cancelled { opacity: .6; }
+.daily-item-cancelled .daily-name { text-decoration: line-through; }
+.daily-info { display: grid; gap: .15rem; }
+.daily-time { font-family: var(--font-head); font-weight: 700; }
+.daily-name { font-weight: 600; }
+.daily-status { color: var(--muted); }
+.daily-note { color: var(--muted); font-style: italic; }
+.daily-actions { display: flex; flex-wrap: wrap; gap: .5rem; }
+.daily-action-danger { color: var(--danger); }
+.daily-error { color: var(--danger); font-weight: 600; }
+
+/* Telefon: satır tek sütuna iner, düğmeler eşit paylaşır. */
+@media (max-width: 600px) {
+  .daily-item { flex-direction: column; align-items: stretch; }
+  .daily-actions .daily-action { flex: 1; }
+  .daily-head .cta { width: 100%; }
+}
