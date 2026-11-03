@@ -1,0 +1,51 @@
+.monthly { display: grid; gap: 1.25rem; }
+.monthly-nav { display: flex; flex-wrap: wrap; gap: .5rem; }
+.monthly-nav-button {
+  padding: .45rem .9rem;
+  border: var(--bw) solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--fg);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.monthly-nav-button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.monthly-title { font-family: var(--font-head); font-size: 1.4rem; }
+.monthly-error { color: var(--danger); font-weight: 600; }
+.monthly-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: .35rem; }
+.monthly-weekday { text-align: center; color: var(--muted); font-family: var(--font-head); font-size: .8rem; font-weight: 700; }
+.monthly-cell { min-height: 4rem; }
+.monthly-day {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: .35rem;
+  border: var(--bw) solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--fg);
+  text-decoration: none;
+}
+.monthly-day:hover { background: var(--glow); }
+.monthly-day:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.monthly-day-number { font-weight: 700; }
+.monthly-day-count {
+  align-self: flex-end;
+  min-width: 1.5rem;
+  padding: 0 .35rem;
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: #fff;
+  font-size: .8rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+/* Telefon: ızgara yatay kaydırmasız sığar, hücreler küçülür. */
+@media (max-width: 600px) {
+  .monthly-grid { gap: .2rem; }
+  .monthly-cell { min-height: 3rem; }
+  .monthly-day { padding: .2rem; }
+  .monthly-weekday { font-size: .7rem; }
+}
