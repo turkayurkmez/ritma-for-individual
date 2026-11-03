@@ -23,9 +23,7 @@ Ritma, serbest çalışan hizmet sağlayıcılar (danışman, koç, eğitmen, di
 
 - Görsel kontrol: `chrome.exe --headless=new --screenshot=<dosya.png> --window-size=1200,900 file:///.../web/index.html`. Başsız Chrome 500px'ten dar pencere açmaz; telefon genişliğini 360px'lik bir `<iframe>` içinde ölç.
 - `validateSignup` / `sendSignup` global fonksiyonlar; `node` ile `vm` içinde çalıştırılabilir. Geçici betikleri projeye değil scratchpad'e koy.
-
-- Sayfayı görmek için `web/index.html` dosyasını tarayıcıda aç.
-- İstersen yerel sunucu ile de açabilirsin: `python -m http.server 8000`, sonra `http://localhost:8000`.
+- Sayfayı görmek için `web/index.html` dosyasını tarayıcıda aç ya da backend'i çalıştırıp `http://localhost:3000` adresine git (aşağıda).
 
 ## Backend
 
@@ -36,10 +34,14 @@ Ritma, serbest çalışan hizmet sağlayıcılar (danışman, koç, eğitmen, di
 - Demo hesaplar: `ayse@ritma.demo` / `demo-ayse-123` ve `mehmet@ritma.demo` / `demo-mehmet-123`. `DEMO_ACCOUNTS_ENABLED=true|false` ile açılır/kapanır; `NODE_ENV=production` iken varsayılan kapalıdır.
 - API `/api/v1` altındadır. Oturum jetonu `Authorization: Bearer <token>` başlığı ya da `ritma_session` çerezi ile gelir. Hata biçimi: `{ "error": { "code", "message" } }` (`validation_error` 400, `unauthorized` 401, `not_found` 404, `conflict` 409).
 - Swagger arayüzü `http://localhost:3000/docs` adresindedir (`swagger-ui-dist`, `api-contract/openapi.yaml`'ı okur). `NODE_ENV=production` iken kapalıdır.
+- Tarayıcıdan API testi (Chrome eklentisiyle): `http://localhost:3000` açıkken sayfa içinde `fetch('/api/v1/...')` çalıştır; aynı origin olduğu için çerez otomatik gider (`ritma_session` HttpOnly, `document.cookie`'de görünmez). İkinci kullanıcıyı sınamak için çerezi ezmemesi adına Bearer jeton + `credentials: 'omit'` kullan.
 - Yeni bir rota eklenince `api-contract/openapi.yaml` güncellenir (`contract.test.ts` rota listesini kontrol eder).
 - Backend'i TDD ile geliştir: önce başarısız test, sonra kod.
 - `npm test` (tsx) tipleri denetlemez ve test dosyaları `tsc` derlemesine girmez; tip hatası için testten ayrı `npm run build` çalıştır.
+- Tek test dosyası: `node --import tsx --test src/http/docs-routes.test.ts` (`backend/` içinde). TDD'de kırmızı adımını bununla doğrula, bitirmeden önce tüm `npm test`'i çalıştır.
 - HTTP testleri `src/test-support.ts` içindeki `startTestServer()` / `buildTestDeps()` ile yazılır (gerçek sunucu + fetch, mock yok).
+- Yerleşim (`backend/src/`): `http/` rotalar ve hata işleyici, `services/` iş kuralları, `repositories/memory/` bellek depoları, `auth/` kimlik sağlayıcı ve oturum, `domain/` ortak tipler ve hatalar. Bağımlılıklar `AppDeps` (`app.ts`) ile verilir; gerçek sunucu için `deps.ts` (`buildDeps`), testler için `test-support.ts` kurar. Yeni isteğe bağlı özellikler (örn. `staticDir`, `docs`) `AppDeps`'e eklenir ve `server.ts`'ten geçirilir.
+- Sunucuyu arka planda (`npm run dev`) başlatıp tarayıcıya gitmeden önce `Ritma http://localhost:3000 adresinde çalışıyor` satırını bekle (`curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/`); hazır olmadan açılan sekme hata sayfası gösterir. İş bitince sunucuyu ve sekmeyi kapat.
 - Tırnak/apostrof içeren uzun dosyaları `cat <<EOF` ile değil Write aracıyla yaz; kabuk komutu ayrıştırma hatasıyla hiç dosya yazmadan çökebilir.
 
 ## Kurallar
@@ -59,5 +61,5 @@ Ritma, serbest çalışan hizmet sağlayıcılar (danışman, koç, eğitmen, di
 
 ## Çalışma düzeni
 
-- Özellik çalışması ayrı bir branch'te yapılır (`feat/...`) ve PR ile `main`'e girer; `main`'e doğrudan commit atma. Commit/push izni oturumda açıkça verilmedikçe sorulur.
+- Özellik çalışması ayrı bir branch'te yapılır (`feat/...`) ve PR ile `main`'e girer; `main`'e doğrudan commit atma.
 - Büyük işler `docs/superpowers/specs/` (tasarım) → `docs/superpowers/plans/` (plan) sırasıyla yürür; `.superpowers/` git'in dışında tutulan geçici çalışma alanıdır.
