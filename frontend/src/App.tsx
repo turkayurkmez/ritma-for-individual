@@ -4,15 +4,12 @@ import { Landing } from './pages/landing/Landing';
 import { Login } from './pages/login/Login';
 import { CustomersPage } from './pages/panel/customers/CustomersPage';
 import { DailyPage } from './pages/panel/daily/DailyPage';
+import { MonthlyPage } from './pages/panel/monthly/MonthlyPage';
 import { PanelLayout } from './pages/panel/PanelLayout';
+import { WeeklyPage } from './pages/panel/weekly/WeeklyPage';
 
 function NotFound() {
   return <p>Sayfa bulunamadı.</p>;
-}
-
-// Sonraki görevlerde gerçek sayfalarla değişecek.
-function Placeholder({ text }: { text: string }) {
-  return <p>{text}</p>;
 }
 
 export function App() {
@@ -23,8 +20,8 @@ export function App() {
       <Route path="/panel" element={<RequireAuth />}>
         <Route element={<PanelLayout />}>
           <Route index element={<DailyPage />} />
-          <Route path="hafta" element={<Placeholder text="Hafta görünümü yakında." />} />
-          <Route path="ay" element={<Placeholder text="Ay görünümü yakında." />} />
+          <Route path="hafta" element={<WeeklyPage />} />
+          <Route path="ay" element={<MonthlyPage />} />
           <Route path="musteriler" element={<CustomersPage />} />
         </Route>
       </Route>

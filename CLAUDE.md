@@ -4,12 +4,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Proje Özeti
 
-Ritma, serbest çalışan hizmet sağlayıcılar (danışman, koç, eğitmen, diyetisyen vb.) için planlanan bir randevu ve müşteri takip sistemidir. Şu an iki parça var: `frontend/` altında ön yüz (şimdilik tanıtım sayfası, amaç ilgi ölçmek; yönetim paneli adım adım ekleniyor, bkz. `docs/superpowers/plans/2026-11-03-ritma-frontend.md`) ve `backend/` altında bellek tabanlı API. Arayüz metinleri Türkçedir.
+Ritma, serbest çalışan hizmet sağlayıcılar (danışman, koç, eğitmen, diyetisyen vb.) için planlanan bir randevu ve müşteri takip sistemidir. Şu an iki parça var: `frontend/` altında ön yüz (tanıtım sayfası ve yönetim paneli; plan: `docs/superpowers/plans/2026-11-03-ritma-frontend.md`) ve `backend/` altında bellek tabanlı API. Arayüz metinleri Türkçedir.
 
 ## Teknoloji
 
 - Ön yüz (`frontend/`) React + TypeScript + Vite ile yazılır (tasarım: `docs/superpowers/specs/2026-11-03-ritma-frontend-design.md`). Backend (`backend/`) Node.js + Express + TypeScript ile yazılır.
 - Ön yüz bağımlılıkları yalnızca: `react`, `react-dom`, `react-router`; geliştirme için `vite`, `@vitejs/plugin-react`, `typescript`, `vitest`, `@testing-library/react`, `jsdom`. Listedışı kütüphane için önce sor.
+
+## Ön yüz rotaları
+
+- `/` tanıtım, `/giris` giriş. `/panel` (günlük), `/panel/hafta`, `/panel/ay`, `/panel/musteriler` giriş ister (`RequireAuth`; oturum yoksa `/giris`'e yönlenir).
+- Günlük, haftalık ve aylık görünüm gün/hafta/ayı `?tarih=YYYY-MM-DD` sorgu parametresinden okur (yoksa bugün); haftalık ve aylıkta bir güne tıklamak `/panel?tarih=...`'e gider. Hafta Pazartesi'den başlar.
+- Tarih yardımcıları `frontend/src/lib/date.ts` içindedir; tarih metni üretmek/çözmek için `toISOString()`/`Date.parse` kullanma (gün kayar).
 
 ## Tasarım
 
