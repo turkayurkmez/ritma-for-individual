@@ -3,6 +3,7 @@ import { RequireAuth } from './auth/RequireAuth';
 import { Landing } from './pages/landing/Landing';
 import { Login } from './pages/login/Login';
 import { CustomersPage } from './pages/panel/customers/CustomersPage';
+import { DailyPage } from './pages/panel/daily/DailyPage';
 import { PanelLayout } from './pages/panel/PanelLayout';
 
 function NotFound() {
@@ -21,7 +22,7 @@ export function App() {
       <Route path="/giris" element={<Login />} />
       <Route path="/panel" element={<RequireAuth />}>
         <Route element={<PanelLayout />}>
-          <Route index element={<Placeholder text="Bugün görünümü yakında." />} />
+          <Route index element={<DailyPage />} />
           <Route path="hafta" element={<Placeholder text="Hafta görünümü yakında." />} />
           <Route path="ay" element={<Placeholder text="Ay görünümü yakında." />} />
           <Route path="musteriler" element={<CustomersPage />} />
