@@ -1,11 +1,10 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { mkdtempSync, writeFileSync } from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { buildDeps } from './deps.js';
 import { AYSE, MEHMET, startTestServer } from './test-support.js';
-
-const webDir = path.resolve(import.meta.dirname, '../../web');
 
 test('full flow: login, customer, appointments, conflict, cancel, soft delete, isolation, logout', async () => {
   const server = startTestServer(buildDeps({}));
@@ -72,12 +71,15 @@ test('demo accounts are switched off in production', async () => {
   }
 });
 
-test('the server serves web/index.html at the root when a static directory is set', async () => {
-  const server = startTestServer({ ...buildDeps({}), staticDir: webDir });
+test('the server serves index.html at the root when a static directory is set', async () => {
+  const staticDir = mkdtempSync(path.join(os.tmpdir(), 'ritma-static-'));
+  const html = '<!doctype html><title>Ritma</title>';
+  writeFileSync(path.join(staticDir, 'index.html'), html);
+  const server = startTestServer({ ...buildDeps({}), staticDir });
   try {
     const res = await fetch(`${server.baseUrl}/`);
     assert.equal(res.status, 200);
-    assert.equal(await res.text(), readFileSync(path.join(webDir, 'index.html'), 'utf8'));
+    assert.equal(await res.text(), html);
   } finally {
     server.close();
   }

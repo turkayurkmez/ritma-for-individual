@@ -4,28 +4,24 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Proje Özeti
 
-Ritma, serbest çalışan hizmet sağlayıcılar (danışman, koç, eğitmen, diyetisyen vb.) için planlanan bir randevu ve müşteri takip sistemidir. Şu an iki parça var: `web/` altında tanıtım sayfası (amaç ilgi ölçmek) ve `backend/` altında bellek tabanlı API (yönetim paneli arayüzü henüz yok). Arayüz metinleri Türkçedir.
+Ritma, serbest çalışan hizmet sağlayıcılar (danışman, koç, eğitmen, diyetisyen vb.) için planlanan bir randevu ve müşteri takip sistemidir. Şu an iki parça var: `frontend/` altında ön yüz (şimdilik tanıtım sayfası, amaç ilgi ölçmek; yönetim paneli adım adım ekleniyor, bkz. `docs/superpowers/plans/2026-11-03-ritma-frontend.md`) ve `backend/` altında bellek tabanlı API. Arayüz metinleri Türkçedir.
 
 ## Teknoloji
 
 - Ön yüz (`frontend/`) React + TypeScript + Vite ile yazılır (tasarım: `docs/superpowers/specs/2026-11-03-ritma-frontend-design.md`). Backend (`backend/`) Node.js + Express + TypeScript ile yazılır.
 - Ön yüz bağımlılıkları yalnızca: `react`, `react-dom`, `react-router`; geliştirme için `vite`, `@vitejs/plugin-react`, `typescript`, `vitest`, `@testing-library/react`, `jsdom`. Listedışı kütüphane için önce sor.
-- Tanıtım sayfası geçici olarak hâlâ `web/index.html` (HTML/CSS/JS, tek dosya, stiller içinde); `frontend/`'e taşınınca `web/` silinecek.
 
 ## Tasarım
 
-- Yön: "keskin ve teknik" (indigo vurgu, 2px kenarlık, sert gölge, monospace başlıklar). Değerler `web/index.html` içindeki `:root` değişkenlerinde.
+- Yön: "keskin ve teknik" (indigo vurgu, 2px kenarlık, sert gölge, monospace başlıklar). Değerler `frontend/src/styles/tokens.css` içindeki `:root` değişkenlerinde. Stiller HTML/JSX dışında ayrı `.css` dosyalarındadır (sayfa/bileşen yanında, `landing-…` gibi önekli sınıf adlarıyla).
 - Tasarım belgesi: `docs/superpowers/specs/`, uygulama planı: `docs/superpowers/plans/`.
 
 ## Komutlar
 
 - Ön yüz (`frontend/` içinde): `npm run dev` (Vite, `http://localhost:5173`; `/api` ve `/docs` istekleri 3000'e yönlenir, backend ayrıca çalışmalı), `npm test` (Vitest), `npm run build` (tip kontrolü + `dist/`).
 
-Geçici tanıtım sayfası `web/` için kurulum, derleme, lint veya test komutu yoktur. Doğrulama için:
-
-- Görsel kontrol: `chrome.exe --headless=new --screenshot=<dosya.png> --window-size=1200,900 file:///.../web/index.html`. Başsız Chrome 500px'ten dar pencere açmaz; telefon genişliğini 360px'lik bir `<iframe>` içinde ölç.
-- `validateSignup` / `sendSignup` global fonksiyonlar; `node` ile `vm` içinde çalıştırılabilir. Geçici betikleri projeye değil scratchpad'e koy.
-- Sayfayı görmek için `web/index.html` dosyasını tarayıcıda aç ya da backend'i çalıştırıp `http://localhost:3000` adresine git (aşağıda).
+- Görsel kontrol: backend çalışırken `chrome.exe --headless=new --hide-scrollbars --virtual-time-budget=4000 --screenshot=<dosya.png> --window-size=1200,2600 http://localhost:3000/` (`--virtual-time-budget` olmadan React henüz çizilmemiş olur). Başsız Chrome 500px'ten dar pencere açmaz; telefon genişliğini 360px'lik bir `<iframe>` içinde ölç. İframe `file://` sayfasından `http://` adresini yüklemez (boş çıkar): sarmalayıcı sayfayı geçici olarak `frontend/dist/` içine koyup `http://localhost:3000/<ad>.html` ile aç, sonra sil.
+- Geçici betikleri ve ekran görüntülerini projeye değil scratchpad'e koy.
 
 ## Backend
 
@@ -50,10 +46,10 @@ Geçici tanıtım sayfası `web/` için kurulum, derleme, lint veya test komutu 
 
 - Dosya ve klasör adları İngilizce olur (örnek: `index.html`, `styles.css`, `script.js`).
 - Ön yüz (`frontend/`) React + TypeScript, backend (`backend/`) TypeScript ile yazılır. Başka teknoloji gerekirse önce kullanıcıya sor.
-- Renkler `:root` içindeki CSS değişkenlerinden gelir. Sayfa şu an yalnızca açık temadadır (koyu tema bloğu PR #1 ile kaldırıldı).
+- Renkler `frontend/src/styles/tokens.css` içindeki `:root` CSS değişkenlerinden gelir. Sayfa şu an yalnızca açık temadadır (koyu tema bloğu PR #1 ile kaldırıldı).
 - Sayfa telefon ekranında da düzgün görünmelidir.
 - Kullanıcıya görünen metinler Türkçe, açıklamalar sade bir dille yazılır.
-- Form `web/index.html` sonundaki `FORM_ENDPOINT` sabitine POST eder. Sabit boşken form hata gösterir (kayıt kaybolmasın diye başarı göstermez). Form servisi seçilmedi; yayından önce adresi yazın. Harici servis eklemek için önce sor.
+- Kayıt formu `frontend/src/pages/landing/signup.ts` içindeki `FORM_ENDPOINT` sabitine POST eder. Sabit boşken form hata gösterir (kayıt kaybolmasın diye başarı göstermez). Form servisi seçilmedi; yayından önce adresi yazın. Harici servis eklemek için önce sor.
 
 ## Yasaklar
 
