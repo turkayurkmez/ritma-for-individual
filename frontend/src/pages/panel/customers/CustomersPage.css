@@ -1,0 +1,55 @@
+.customers { display: grid; gap: 1.25rem; }
+.customers-toolbar { display: flex; flex-wrap: wrap; align-items: end; gap: 1rem; }
+.customers-search { flex: 1 1 14rem; }
+.customers-search label { display: block; margin-bottom: .3rem; font-weight: 600; }
+.customers-search input {
+  width: 100%;
+  padding: .7rem .9rem;
+  border: var(--bw) solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--fg);
+  font: inherit;
+}
+.customers-search input:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.customers-list { display: grid; gap: .75rem; list-style: none; padding: 0; margin: 0; }
+.customers-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  padding: 1rem;
+  border: var(--bw) solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+.customers-info { display: grid; gap: .15rem; }
+.customers-name { font-family: var(--font-head); font-weight: 700; }
+.customers-meta { color: var(--muted); }
+.customers-actions { display: flex; gap: .5rem; }
+.customers-action,
+.customers-retry {
+  padding: .45rem .9rem;
+  border: var(--bw) solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--fg);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.customers-action:focus-visible,
+.customers-retry:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.customers-action-danger { color: var(--danger); }
+.customers-error { color: var(--danger); font-weight: 600; }
+.customers-error .customers-retry { margin-top: .5rem; }
+
+/* Telefon: liste tek sütuna iner, düğmeler tam genişlikte. */
+@media (max-width: 600px) {
+  .customers-item { flex-direction: column; align-items: stretch; }
+  .customers-actions { width: 100%; }
+  .customers-action { flex: 1; }
+  .customers-toolbar .cta { width: 100%; }
+}

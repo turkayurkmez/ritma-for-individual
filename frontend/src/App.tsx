@@ -2,6 +2,7 @@ import { Route, Routes } from 'react-router';
 import { RequireAuth } from './auth/RequireAuth';
 import { Landing } from './pages/landing/Landing';
 import { Login } from './pages/login/Login';
+import { CustomersPage } from './pages/panel/customers/CustomersPage';
 import { PanelLayout } from './pages/panel/PanelLayout';
 
 function NotFound() {
@@ -23,7 +24,7 @@ export function App() {
           <Route index element={<Placeholder text="Bugün görünümü yakında." />} />
           <Route path="hafta" element={<Placeholder text="Hafta görünümü yakında." />} />
           <Route path="ay" element={<Placeholder text="Ay görünümü yakında." />} />
-          <Route path="musteriler" element={<Placeholder text="Müşteriler yakında." />} />
+          <Route path="musteriler" element={<CustomersPage />} />
         </Route>
       </Route>
       <Route path="*" element={<NotFound />} />
