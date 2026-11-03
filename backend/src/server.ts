@@ -6,7 +6,8 @@ import { buildDeps } from './deps.js';
 const config = loadConfig(process.env);
 // Hem src/ (geliştirme) hem dist/ (derlenmiş) bir üst klasörde backend/, onun da üstünde repo kökü vardır.
 const staticDir = path.resolve(import.meta.dirname, '../../web');
+const specPath = path.resolve(import.meta.dirname, '../../api-contract/openapi.yaml');
 
-createApp({ ...buildDeps(process.env), staticDir }).listen(config.port, () => {
+createApp({ ...buildDeps(process.env), staticDir, docs: { specPath } }).listen(config.port, () => {
   console.log(`Ritma http://localhost:${config.port} adresinde çalışıyor`);
 });
