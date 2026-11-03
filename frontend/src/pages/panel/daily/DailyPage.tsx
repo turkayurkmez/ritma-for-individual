@@ -66,7 +66,7 @@ export function DailyPage() {
           <p>{error.message}</p>
           <button type="button" className="daily-nav-button" onClick={reload}>Yeniden dene</button>
         </div>
-      ) : !data && loading ? (
+      ) : loading || !data ? (
         <p>Yükleniyor…</p>
       ) : data && data.length === 0 ? (
         <p>Bu gün için randevu yok.</p>
