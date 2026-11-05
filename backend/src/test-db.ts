@@ -21,6 +21,8 @@ export const testDbEnabled = Boolean(url);
 
 export interface TestDb {
   pool: pg.Pool;
+  /** Aynı şemaya bağlanan ek bir havuz (gerçek eşzamanlılık testleri için); `close` kapatır. */
+  extraPool(): pg.Pool;
   /** Dört veri tablosunu boşaltır. */
   reset(): Promise<void>;
   /** Geçici şemayı siler ve havuzu kapatır. */
@@ -39,7 +41,9 @@ export async function openTestDb(): Promise<TestDb> {
   await admin.end();
 
   const pool = createPool(url, { max: 1, options: `-c search_path=${schema},public` });
+  const extras: pg.Pool[] = [];
   const close = async () => {
+    await Promise.all(extras.map((p) => p.end()));
     await pool.end();
     const cleanup = createPool(url, { max: 1 });
     try {
@@ -59,6 +63,11 @@ export async function openTestDb(): Promise<TestDb> {
   }
   return {
     pool,
+    extraPool: () => {
+      const extra = createPool(url, { max: 1, options: `-c search_path=${schema},public` });
+      extras.push(extra);
+      return extra;
+    },
     reset: async () => {
       await pool.query('TRUNCATE sessions, appointments, customers, users CASCADE');
     },

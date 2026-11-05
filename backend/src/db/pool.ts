@@ -15,6 +15,14 @@ const types = {
   },
 };
 
+/** Neon'un uyuyan sunucusunu uyandırmak birkaç saniye sürebilir; ulaşılamayan adres ise sonsuza dek beklemesin. */
+const CONNECTION_TIMEOUT_MS = 15_000;
+
 export function createPool(databaseUrl: string, options: pg.PoolConfig = {}): pg.Pool {
-  return new pg.Pool({ connectionString: databaseUrl, types, ...options });
+  const pool = new pg.Pool({ connectionString: databaseUrl, types, connectionTimeoutMillis: CONNECTION_TIMEOUT_MS, ...options });
+  // Boşta bekleyen bağlantı koparsa (Neon uyku/yeniden başlatma) dinleyici yoksa süreç çöker.
+  pool.on('error', (error) => {
+    console.error('Veritabanı bağlantı hatası:', error.message);
+  });
+  return pool;
 }
