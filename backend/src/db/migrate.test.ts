@@ -48,3 +48,8 @@ test('date and time columns come back as plain strings', { skip }, async () => {
   const { rows } = await db.pool.query("select '2000-01-01'::date as d, '09:30'::time as t");
   assert.deepEqual(rows[0], { d: '2000-01-01', t: '09:30' });
 });
+
+test('the test database runs in its own schema, never in public', { skip }, async () => {
+  const { rows } = await db.pool.query('select current_schema() as schema');
+  assert.match(rows[0].schema, /^test_[0-9a-f]{12}$/);
+});
