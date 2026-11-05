@@ -7,7 +7,7 @@ import { buildDeps } from './deps.js';
 import { AYSE, MEHMET, startTestServer } from './test-support.js';
 
 test('full flow: login, customer, appointments, conflict, cancel, soft delete, isolation, logout', async () => {
-  const server = startTestServer(buildDeps({}));
+  const server = startTestServer(await buildDeps({}));
   try {
     const ayse = await server.login(AYSE);
     const mehmet = await server.login(MEHMET);
@@ -58,7 +58,7 @@ test('full flow: login, customer, appointments, conflict, cancel, soft delete, i
 });
 
 test('demo accounts are switched off in production', async () => {
-  const server = startTestServer(buildDeps({ NODE_ENV: 'production' }));
+  const server = startTestServer(await buildDeps({ NODE_ENV: 'production' }));
   try {
     const res = await fetch(`${server.baseUrl}/api/v1/auth/login`, {
       method: 'POST',
@@ -75,7 +75,7 @@ test('the server serves index.html at the root when a static directory is set', 
   const staticDir = mkdtempSync(path.join(os.tmpdir(), 'ritma-static-'));
   const html = '<!doctype html><title>Ritma</title>';
   writeFileSync(path.join(staticDir, 'index.html'), html);
-  const server = startTestServer({ ...buildDeps({}), staticDir });
+  const server = startTestServer({ ...(await buildDeps({})), staticDir });
   try {
     const res = await fetch(`${server.baseUrl}/`);
     assert.equal(res.status, 200);
