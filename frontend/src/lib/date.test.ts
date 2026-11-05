@@ -1,5 +1,5 @@
 import {
-  addDays, formatDayLong, formatMonth, monthGrid, monthRange, parseDateString, startOfWeek,
+  addDays, addHour, formatDayLong, formatMonth, monthGrid, monthRange, parseDateString, startOfWeek,
   toDateString, todayString, weekDays,
 } from './date';
 
@@ -73,4 +73,12 @@ test('monthRange and formatMonth', () => {
   expect(monthRange(2026, 11)).toEqual({ from: '2026-11-01', to: '2026-11-30' });
   expect(monthRange(2028, 2)).toEqual({ from: '2028-02-01', to: '2028-02-29' });
   expect(formatMonth(2026, 11)).toBe('Kasım 2026');
+});
+
+test('addHour adds one hour to a HH:MM time and caps at 23:59', () => {
+  expect(addHour('10:00')).toBe('11:00');
+  expect(addHour('09:30')).toBe('10:30');
+  expect(addHour('22:45')).toBe('23:45');
+  expect(addHour('23:30')).toBe('23:59');
+  expect(addHour('')).toBe('');
 });

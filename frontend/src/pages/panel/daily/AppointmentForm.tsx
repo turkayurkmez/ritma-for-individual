@@ -3,6 +3,7 @@ import { createAppointment, updateAppointment } from '../../../api/appointments'
 import { listCustomers } from '../../../api/customers';
 import type { Appointment, AppointmentInput, AppointmentStatus } from '../../../api/types';
 import { Modal } from '../../../components/Modal';
+import { addHour } from '../../../lib/date';
 import { statusLabel, STATUSES } from '../../../lib/labels';
 import { useApi } from '../../../lib/useApi';
 import './AppointmentForm.css';
@@ -24,6 +25,8 @@ export function AppointmentForm({ appointment, defaultDate, onSaved, onCancel }:
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const inFlight = useRef(false);
+  // Bitişi kullanıcı elle değiştirdiyse başlangıç değişince ezilmez; düzenlemede hiç otomatik doldurulmaz.
+  const endEdited = useRef(Boolean(appointment));
   const customers = useApi(() => listCustomers(), []);
 
   const activeCustomers = customers.data ?? [];
@@ -32,6 +35,16 @@ export function AppointmentForm({ appointment, defaultDate, onSaved, onCancel }:
     appointment && customers.data && !customers.data.some((c) => c.id === appointment.customerId)
       ? appointment.customer
       : null;
+
+  function handleStartChange(value: string) {
+    setStartTime(value);
+    if (!endEdited.current) setEndTime(addHour(value));
+  }
+
+  function handleEndChange(value: string) {
+    endEdited.current = true;
+    setEndTime(value);
+  }
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -77,11 +90,11 @@ export function AppointmentForm({ appointment, defaultDate, onSaved, onCancel }:
         <div className="appointment-form-times">
           <div>
             <label htmlFor="appointment-start">Başlangıç</label>
-            <input id="appointment-start" type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} />
+            <input id="appointment-start" type="time" value={startTime} onChange={(e) => handleStartChange(e.target.value)} />
           </div>
           <div>
             <label htmlFor="appointment-end">Bitiş</label>
-            <input id="appointment-end" type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} />
+            <input id="appointment-end" type="time" value={endTime} onChange={(e) => handleEndChange(e.target.value)} />
           </div>
         </div>
         <div>
