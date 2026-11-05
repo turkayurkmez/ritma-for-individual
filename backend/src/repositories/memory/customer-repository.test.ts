@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import type { Customer } from '../../domain/types.js';
+import { customerRepositoryContract } from '../contract/customer-repository.contract.js';
 import { MemoryCustomerRepository } from './customer-repository.js';
 
 const customer = (over: Partial<Customer> = {}): Customer => ({
@@ -36,3 +37,8 @@ test('findById still returns a soft-deleted customer after update', async () => 
   await repo.update({ ...created, deletedAt: '2026-10-27T10:00:00.000Z' });
   assert.equal((await repo.findById('u1', 'c1'))?.deletedAt, '2026-10-27T10:00:00.000Z');
 });
+
+customerRepositoryContract('memory', async () => ({
+  repo: new MemoryCustomerRepository(),
+  seedUser: async () => {},
+}));
