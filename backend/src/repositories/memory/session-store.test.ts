@@ -1,5 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { sessionStoreContract } from '../contract/session-store.contract.js';
 import { MemorySessionStore } from './session-store.js';
 
 test('a created session can be found until it is deleted', async () => {
@@ -16,3 +17,5 @@ test('sessions get distinct unguessable tokens', async () => {
   assert.notEqual(a.token, b.token);
   assert.match(a.token, /^[0-9a-f]{64}$/);
 });
+
+sessionStoreContract('memory', async () => ({ store: new MemorySessionStore(), seedUser: async () => {} }));
