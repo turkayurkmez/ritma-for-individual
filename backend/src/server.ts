@@ -8,6 +8,12 @@ const config = loadConfig(process.env);
 const staticDir = path.resolve(import.meta.dirname, '../../frontend/dist');
 const specPath = path.resolve(import.meta.dirname, '../../api-contract/openapi.yaml');
 
-createApp({ ...buildDeps(process.env), staticDir, docs: { specPath } }).listen(config.port, () => {
-  console.log(`Ritma http://localhost:${config.port} adresinde çalışıyor`);
-});
+try {
+  const deps = await buildDeps(process.env);
+  createApp({ ...deps, staticDir, docs: { specPath } }).listen(config.port, () => {
+    console.log(`Ritma http://localhost:${config.port} adresinde çalışıyor`);
+  });
+} catch (error) {
+  console.error(error instanceof Error ? error.message : error);
+  process.exit(1);
+}

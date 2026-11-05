@@ -10,17 +10,20 @@ interface DemoAccount {
 
 const KEY_LENGTH = 64;
 
-const DEMO_USERS: ReadonlyArray<{ user: User; password: string }> = [
+const DEMO_ACCOUNT_DEFS: ReadonlyArray<{ user: User; password: string }> = [
   { user: { id: 'demo-user-ayse', email: 'ayse@ritma.demo', displayName: 'Ayşe Demir' }, password: 'demo-ayse-123' },
   { user: { id: 'demo-user-mehmet', email: 'mehmet@ritma.demo', displayName: 'Mehmet Kaya' }, password: 'demo-mehmet-123' },
 ];
+
+/** Parolasız demo kullanıcılar (veritabanına eklenmek için). */
+export const DEMO_USERS: readonly User[] = DEMO_ACCOUNT_DEFS.map(({ user }) => user);
 
 function hashPassword(password: string, salt: Buffer): Buffer {
   return scryptSync(password, salt, KEY_LENGTH);
 }
 
 export class DemoIdentityProvider implements IdentityProvider {
-  private readonly accounts: DemoAccount[] = DEMO_USERS.map(({ user, password }) => {
+  private readonly accounts: DemoAccount[] = DEMO_ACCOUNT_DEFS.map(({ user, password }) => {
     const salt = randomBytes(16);
     return { user, salt, hash: hashPassword(password, salt) };
   });
