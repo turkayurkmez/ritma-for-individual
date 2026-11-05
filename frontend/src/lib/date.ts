@@ -71,3 +71,11 @@ export function monthRange(year: number, month: number): { from: string; to: str
 export function formatMonth(year: number, month: number): string {
   return new Intl.DateTimeFormat('tr-TR', { month: 'long', year: 'numeric' }).format(new Date(year, month - 1, 1));
 }
+
+// "HH:MM" saatine bir saat ekler; gece yarısını aşmamak için en çok 23:59 döner.
+export function addHour(time: string): string {
+  const match = /^(\d{2}):(\d{2})$/.exec(time);
+  if (!match) return '';
+  const hours = Number(match[1]) + 1;
+  return hours > 23 ? '23:59' : `${pad(hours)}:${match[2]}`;
+}

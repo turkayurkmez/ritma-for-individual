@@ -209,3 +209,43 @@ test('does not show the previous day\'s appointments under the new date while lo
   await act(async () => { release(); });
   expect(await screen.findByText('Bu gün için randevu yok.')).toBeTruthy();
 });
+
+test('fills the end time one hour after the start time when adding', async () => {
+  stubFetch({
+    [DAY]: () => ({ body: { appointments: [] } }),
+    [CUSTOMERS]: () => ({ body: { customers: [ayse, ali] } }),
+  });
+  renderApp(<DailyPage />, { route: ROUTE });
+  const dialog = await openAddForm();
+  const end = within(dialog).getByLabelText('Bitiş') as HTMLInputElement;
+  fireEvent.change(within(dialog).getByLabelText('Başlangıç'), { target: { value: '10:00' } });
+  expect(end.value).toBe('11:00');
+  fireEvent.change(within(dialog).getByLabelText('Başlangıç'), { target: { value: '14:30' } });
+  expect(end.value).toBe('15:30');
+});
+
+test('keeps a hand-edited end time when the start time changes', async () => {
+  stubFetch({
+    [DAY]: () => ({ body: { appointments: [] } }),
+    [CUSTOMERS]: () => ({ body: { customers: [ayse, ali] } }),
+  });
+  renderApp(<DailyPage />, { route: ROUTE });
+  const dialog = await openAddForm();
+  fireEvent.change(within(dialog).getByLabelText('Başlangıç'), { target: { value: '10:00' } });
+  fireEvent.change(within(dialog).getByLabelText('Bitiş'), { target: { value: '10:30' } });
+  fireEvent.change(within(dialog).getByLabelText('Başlangıç'), { target: { value: '12:00' } });
+  expect((within(dialog).getByLabelText('Bitiş') as HTMLInputElement).value).toBe('10:30');
+});
+
+test('does not touch the end time when editing an existing appointment', async () => {
+  stubFetch({
+    [DAY]: () => ({ body: { appointments: [appt] } }),
+    [CUSTOMERS]: () => ({ body: { customers: [ayse, ali] } }),
+  });
+  renderApp(<DailyPage />, { route: ROUTE });
+  fireEvent.click(await screen.findByRole('button', { name: '10:00 Ayşe Kaya düzenle' }));
+  const dialog = screen.getByRole('dialog');
+  const endBefore = (within(dialog).getByLabelText('Bitiş') as HTMLInputElement).value;
+  fireEvent.change(within(dialog).getByLabelText('Başlangıç'), { target: { value: '16:00' } });
+  expect((within(dialog).getByLabelText('Bitiş') as HTMLInputElement).value).toBe(endBefore);
+});
