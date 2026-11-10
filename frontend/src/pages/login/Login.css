@@ -16,3 +16,13 @@
 .login-error { color: var(--danger); font-weight: 600; }
 .login-back { margin-top: 1.5rem; }
 .login-back a { color: var(--accent); }
+.login-google { display: flex; justify-content: center; max-width: 100%; overflow: hidden; }
+.login-divider {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  margin: 1.25rem 0;
+  color: var(--muted);
+}
+.login-divider::before,
+.login-divider::after { content: ''; flex: 1; border-top: 1px solid var(--border); }
