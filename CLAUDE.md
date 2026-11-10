@@ -19,6 +19,7 @@ Ritma, serbest çalışan hizmet sağlayıcılar (danışman, koç, eğitmen, di
 - Testler `fireEvent` ile yazılır; ağ `test-utils.tsx` içindeki `stubFetch` ile taklit edilir, ekranlar `renderApp` ile çizilir. Dosya okuyan testler Vite `?raw` ile yazılır (`node:fs` yok).
 - Gecikmeli (debounce) testlerde `vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })` yalnızca yazma/ilerletme adımında aç, `findBy…`'dan önce `vi.useRealTimers()` ile kapat (aksi halde bekleme asılı kalır).
 - `renderApp` her çizimde `GET /api/v1/auth/me` de atar; istek sayısı/sırası denetlerken `calls`'ı URL'ye göre süz.
+- Panelde sabit "İki hafta ücretsiz dene" şeridi vardır; tanıtım sayfasında "Erken erişim" ifadesi yoktur.
 - Tarih yardımcıları `frontend/src/lib/date.ts` içindedir; tarih metni üretmek/çözmek için `toISOString()`/`Date.parse` kullanma (gün kayar).
 
 ## Tasarım
@@ -42,7 +43,8 @@ Ritma, serbest çalışan hizmet sağlayıcılar (danışman, koç, eğitmen, di
 - Postgres testleri (`repositories/postgres/`, `db/`, `e2e-postgres.test.ts`) yalnızca `TEST_DATABASE_URL` tanımlıysa çalışır, yoksa atlanır. Rastgele adlı geçici şema açıp siler; Neon'un havuzlu (`-pooler`) adresi verilirse `test-db.ts` doğrudan adrese çevirir. Mümkünse ayrı bir Neon branch'i kullan. Bellek ve Postgres depoları aynı davranış testlerini paylaşır (`repositories/contract/`).
 - Sunucu derlenmiş ön yüzü (`frontend/dist`) servis eder (önce `cd frontend && npm run build`): `npm run dev`, sonra `http://localhost:3000`. `PORT` ile port değişir. `/api` ve `/docs` dışındaki uzantısız GET istekleri `index.html` döndürür (SPA yedek rotası, `http/spa-fallback.ts`); eksik dosyalar (örn. `/assets/yok.js`) 404 kalır.
 - Demo hesaplar: `ayse@ritma.demo` / `demo-ayse-123` ve `mehmet@ritma.demo` / `demo-mehmet-123`. `DEMO_ACCOUNTS_ENABLED=true|false` ile açılır/kapanır; `NODE_ENV=production` iken varsayılan kapalıdır.
-- API `/api/v1` altındadır. Oturum jetonu `Authorization: Bearer <token>` başlığı ya da `ritma_session` çerezi ile gelir. Hata biçimi: `{ "error": { "code", "message" } }` (`validation_error` 400, `unauthorized` 401, `not_found` 404, `conflict` 409).
+- Google kullanıcıları `users.google_sub` ile tanınır. Kullanıcı deposu tek kaynaktır (demo kullanıcılar da orada). Demo hesaplar kapalıyken başlangıçta eski demo oturumları silinir (`SessionStore.deleteByUserIds`). Google kimlik doğrulaması `tokeninfo` ile yapılır (küçük trafik için yeterli); Google'a ulaşılamazsa `upstream_error` 502 döner.
+- API `/api/v1` altındadır. Oturum jetonu `Authorization: Bearer <token>` başlığı ya da `ritma_session` çerezi ile gelir. Hata biçimi: `{ "error": { "code", "message" } }` (`validation_error` 400, `unauthorized` 401, `not_found` 404, `conflict` 409, `upstream_error` 502).
 - Swagger arayüzü `http://localhost:3000/docs` adresindedir (`swagger-ui-dist`, `api-contract/openapi.yaml`'ı okur). `NODE_ENV=production` iken kapalıdır.
 - Tarayıcıdan API testi (Chrome eklentisiyle): `http://localhost:3000` açıkken sayfa içinde `fetch('/api/v1/...')` çalıştır; aynı origin olduğu için çerez otomatik gider (`ritma_session` HttpOnly, `document.cookie`'de görünmez). İkinci kullanıcıyı sınamak için çerezi ezmemesi adına Bearer jeton + `credentials: 'omit'` kullan.
 - Yeni bir rota eklenince `api-contract/openapi.yaml` güncellenir (`contract.test.ts` rota listesini kontrol eder).
@@ -61,7 +63,7 @@ Ritma, serbest çalışan hizmet sağlayıcılar (danışman, koç, eğitmen, di
 - Renkler `frontend/src/styles/tokens.css` içindeki `:root` CSS değişkenlerinden gelir. Sayfa şu an yalnızca açık temadadır (koyu tema bloğu PR #1 ile kaldırıldı).
 - Sayfa telefon ekranında da düzgün görünmelidir.
 - Kullanıcıya görünen metinler Türkçe, açıklamalar sade bir dille yazılır.
-- Kayıt formu `frontend/src/pages/landing/signup.ts` içindeki `FORM_ENDPOINT` sabitine POST eder. Sabit boşken form hata gösterir (kayıt kaybolmasın diye başarı göstermez). Form servisi seçilmedi; yayından önce adresi yazın. Harici servis eklemek için önce sor.
+- Giriş Google ile de yapılır. `GOOGLE_CLIENT_ID` (`backend/.env`) boşsa Google düğmesi görünmez; ön yüz Client ID'yi `GET /api/v1/auth/config`'ten alır. Düğme çalışma anında Google Identity Services betiğinin yüklenmesine bağlıdır. Harici servis eklemek için önce sor.
 
 ## Yasaklar
 
