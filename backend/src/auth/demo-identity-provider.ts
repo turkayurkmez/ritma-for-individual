@@ -34,8 +34,4 @@ export class DemoIdentityProvider implements IdentityProvider {
     const candidate = hashPassword(password, account.salt);
     return timingSafeEqual(candidate, account.hash) ? account.user : undefined;
   }
-
-  async findUser(id: string): Promise<User | undefined> {
-    return this.accounts.find((a) => a.user.id === id)?.user;
-  }
 }

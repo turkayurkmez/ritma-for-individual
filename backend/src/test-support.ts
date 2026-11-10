@@ -1,20 +1,26 @@
 import type { AddressInfo } from 'node:net';
 import { createApp, type AppDeps } from './app.js';
-import { DemoIdentityProvider } from './auth/demo-identity-provider.js';
+import { DEMO_USERS, DemoIdentityProvider } from './auth/demo-identity-provider.js';
+import type { GoogleTokenVerifier } from './auth/google-token-verifier.js';
 import { SessionService } from './auth/session-service.js';
 import { MemoryAppointmentRepository } from './repositories/memory/appointment-repository.js';
 import { MemoryCustomerRepository } from './repositories/memory/customer-repository.js';
 import { MemorySessionStore } from './repositories/memory/session-store.js';
+import { MemoryUserRepository } from './repositories/memory/user-repository.js';
 import { AppointmentService } from './services/appointment-service.js';
 import { CustomerService } from './services/customer-service.js';
 
 export const AYSE = { email: 'ayse@ritma.demo', password: 'demo-ayse-123' };
 export const MEHMET = { email: 'mehmet@ritma.demo', password: 'demo-mehmet-123' };
 
+export function buildTestSessions(google?: GoogleTokenVerifier): SessionService {
+  return new SessionService(new DemoIdentityProvider(), new MemorySessionStore(), new MemoryUserRepository(DEMO_USERS), google);
+}
+
 export function buildTestDeps(over: Partial<AppDeps> = {}): AppDeps {
   const customerRepo = new MemoryCustomerRepository();
   return {
-    sessions: new SessionService(new DemoIdentityProvider(), new MemorySessionStore()),
+    sessions: buildTestSessions(),
     customers: new CustomerService(customerRepo),
     appointments: new AppointmentService(new MemoryAppointmentRepository(), customerRepo),
     production: false,
