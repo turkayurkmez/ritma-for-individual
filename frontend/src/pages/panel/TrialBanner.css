@@ -1,0 +1,12 @@
+.trial-banner {
+  width: 100%;
+  box-sizing: border-box;
+  padding: .6rem 1rem;
+  background: var(--accent);
+  color: var(--bg);
+  border-bottom: var(--bw) solid var(--border);
+  font-family: var(--font-head);
+  font-weight: 700;
+  text-align: center;
+  overflow-wrap: anywhere;
+}

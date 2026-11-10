@@ -27,3 +27,12 @@ test('Çıkış calls logout and returns to the login page', async () => {
   expect(await screen.findByRole('heading', { name: 'Giriş' })).toBeTruthy();
   expect(calls.some((c) => c.method === 'POST' && c.url === '/api/v1/auth/logout')).toBe(true);
 });
+
+test('shows the trial banner above the panel on the daily and customers tabs', async () => {
+  stubFetch({ 'GET /api/v1/auth/me': () => ({ body: { user } }) });
+  const first = renderApp(<App />, { route: '/panel' });
+  expect(await screen.findByText('İki hafta ücretsiz dene')).toBeTruthy();
+  first.unmount();
+  renderApp(<App />, { route: '/panel/musteriler' });
+  expect(await screen.findByText('İki hafta ücretsiz dene')).toBeTruthy();
+});

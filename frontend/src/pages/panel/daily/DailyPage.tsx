@@ -6,11 +6,13 @@ import { ConfirmDialog } from '../../../components/ConfirmDialog';
 import { addDays, formatDayLong, todayString } from '../../../lib/date';
 import { statusLabel } from '../../../lib/labels';
 import { useApi } from '../../../lib/useApi';
+import { CustomerForm } from '../customers/CustomerForm';
 import { AppointmentForm } from './AppointmentForm';
 import './DailyPage.css';
 
 type Dialog =
   | { kind: 'form'; appointment?: Appointment }
+  | { kind: 'customer' }
   | { kind: 'cancel'; appointment: Appointment }
   | { kind: 'delete'; appointment: Appointment }
   | null;
@@ -69,7 +71,10 @@ export function DailyPage() {
       ) : loading || !data ? (
         <p>Yükleniyor…</p>
       ) : data && data.length === 0 ? (
-        <p>Bu gün için randevu yok.</p>
+        <div className="daily-empty">
+          <p>Bu gün için randevu yok.</p>
+          <button type="button" className="cta" onClick={() => setDialog({ kind: 'customer' })}>Müşteri ekle</button>
+        </div>
       ) : (
         <ul className="daily-list">
           {data?.map((appointment) => {
@@ -124,6 +129,9 @@ export function DailyPage() {
           onSaved={handleSaved}
           onCancel={() => setDialog(null)}
         />
+      )}
+      {dialog?.kind === 'customer' && (
+        <CustomerForm onSaved={() => setDialog(null)} onCancel={() => setDialog(null)} />
       )}
       {dialog?.kind === 'cancel' && (
         <ConfirmDialog

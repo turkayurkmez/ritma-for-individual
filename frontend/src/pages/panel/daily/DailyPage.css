@@ -37,11 +37,14 @@
 .daily-note { color: var(--muted); font-style: italic; }
 .daily-actions { display: flex; flex-wrap: wrap; gap: .5rem; }
 .daily-action-danger { color: var(--danger); }
+.daily-empty { display: grid; justify-items: start; gap: .75rem; padding: 1.25rem; border: var(--bw) solid var(--border); border-radius: var(--radius); background: var(--surface); }
+.daily-empty p { margin: 0; }
 .daily-error { color: var(--danger); font-weight: 600; }
 
 /* Telefon: satır tek sütuna iner, düğmeler eşit paylaşır. */
 @media (max-width: 600px) {
   .daily-item { flex-direction: column; align-items: stretch; }
   .daily-actions .daily-action { flex: 1; }
-  .daily-head .cta { width: 100%; }
+  .daily-head .cta,
+  .daily-empty .cta { width: 100%; }
 }

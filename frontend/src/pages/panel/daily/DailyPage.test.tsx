@@ -249,3 +249,27 @@ test('does not touch the end time when editing an existing appointment', async (
   fireEvent.change(within(dialog).getByLabelText('Başlangıç'), { target: { value: '16:00' } });
   expect((within(dialog).getByLabelText('Bitiş') as HTMLInputElement).value).toBe(endBefore);
 });
+
+test('the empty state offers "Müşteri ekle", which opens the customer form and can be cancelled', async () => {
+  stubFetch({ [DAY]: () => ({ body: { appointments: [] } }) });
+  renderApp(<DailyPage />, { route: ROUTE });
+  await screen.findByText('Bu gün için randevu yok.');
+  fireEvent.click(screen.getByRole('button', { name: 'Müşteri ekle' }));
+  expect(screen.getByLabelText('Ad')).toBeTruthy();
+  fireEvent.click(screen.getByRole('button', { name: 'Vazgeç' }));
+  expect(screen.queryByLabelText('Ad')).toBeNull();
+});
+
+test('there is only one "Randevu ekle" button in the empty state', async () => {
+  stubFetch({ [DAY]: () => ({ body: { appointments: [] } }) });
+  renderApp(<DailyPage />, { route: ROUTE });
+  await screen.findByText('Bu gün için randevu yok.');
+  expect(screen.getAllByRole('button', { name: 'Randevu ekle' })).toHaveLength(1);
+});
+
+test('the empty-state "Müşteri ekle" is not shown when the day has appointments', async () => {
+  stubFetch({ [DAY]: () => ({ body: { appointments: [appt] } }) });
+  renderApp(<DailyPage />, { route: ROUTE });
+  await screen.findByText('Ayşe Kaya');
+  expect(screen.queryByRole('button', { name: 'Müşteri ekle' })).toBeNull();
+});
