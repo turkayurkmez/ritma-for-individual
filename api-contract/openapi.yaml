@@ -51,6 +51,52 @@ paths:
                   user: { $ref: '#/components/schemas/User' }
         '400': { $ref: '#/components/responses/ValidationError' }
         '401': { $ref: '#/components/responses/Unauthorized' }
+  /api/v1/auth/google:
+    post:
+      summary: Google ile giriş yap
+      description: Google'dan alınan kimlik belgesi (ID token) doğrulanır; hesap ilk girişte açılır.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [credential]
+              properties:
+                credential: { type: string }
+      responses:
+        '200':
+          description: Giriş başarılı; jeton ayrıca HttpOnly çerez olarak da verilir.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token: { type: string }
+                  user: { $ref: '#/components/schemas/User' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: E-posta başka bir hesapta kayıtlı.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '502': { $ref: '#/components/responses/UpstreamError' }
+  /api/v1/auth/config:
+    get:
+      summary: Giriş ayarları
+      security: []
+      responses:
+        '200':
+          description: Google ile giriş kapalıysa `googleClientId` null olur.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  googleClientId: { type: string, nullable: true }
   /api/v1/auth/logout:
     post:
       summary: Çıkış yap
@@ -263,6 +309,11 @@ components:
       content:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }
+    UpstreamError:
+      description: Google'a ulaşılamadı.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
   schemas:
     Error:
       type: object
@@ -272,7 +323,7 @@ components:
           properties:
             code:
               type: string
-              enum: [validation_error, unauthorized, not_found, conflict, server_error]
+              enum: [validation_error, unauthorized, not_found, conflict, upstream_error, server_error]
             message: { type: string }
     User:
       type: object

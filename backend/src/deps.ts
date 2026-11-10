@@ -71,5 +71,6 @@ export async function buildDeps(env: NodeJS.ProcessEnv): Promise<AppDeps> {
     customers: new CustomerService(stores.customers),
     appointments: new AppointmentService(stores.appointments, stores.customers),
     production: config.production,
+    googleClientId: config.googleClientId,
   };
 }
