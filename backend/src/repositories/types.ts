@@ -1,4 +1,4 @@
-import type { Appointment, Customer } from '../domain/types.js';
+import type { Appointment, Customer, User } from '../domain/types.js';
 
 export interface CustomerRepository {
   create(customer: Customer): Promise<Customer>;
@@ -30,4 +30,11 @@ export interface SessionStore {
   create(userId: string): Promise<Session>;
   find(token: string): Promise<Session | undefined>;
   delete(token: string): Promise<void>;
+}
+
+export interface UserRepository {
+  findById(id: string): Promise<User | undefined>;
+  /** Aynı googleSub varsa o kullanıcıyı döndürür (e-posta/ad güncellenmez); yoksa yeni kullanıcı açar.
+   *  E-posta (büyük/küçük harf fark etmez) başka bir kullanıcıda varsa hiçbir şey yazmadan `undefined` döner. */
+  findOrCreateByGoogle(input: { googleSub: string; email: string; displayName: string }): Promise<User | undefined>;
 }
