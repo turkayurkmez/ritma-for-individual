@@ -21,4 +21,10 @@ export class MemorySessionStore implements SessionStore {
   async delete(token: string): Promise<void> {
     this.sessions.delete(token);
   }
+
+  async deleteByUserIds(userIds: readonly string[]): Promise<void> {
+    for (const [token, session] of this.sessions) {
+      if (userIds.includes(session.userId)) this.sessions.delete(token);
+    }
+  }
 }

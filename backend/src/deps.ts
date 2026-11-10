@@ -59,6 +59,7 @@ async function buildStores(databaseUrl: string | undefined, seedDemoUsers: boole
 export async function buildDeps(env: NodeJS.ProcessEnv): Promise<AppDeps> {
   const config = loadConfig(env);
   const stores = await buildStores(config.databaseUrl, config.demoAccountsEnabled);
+  if (!config.demoAccountsEnabled) await stores.sessions.deleteByUserIds(DEMO_USERS.map((u) => u.id));
   const provider = config.demoAccountsEnabled ? new DemoIdentityProvider() : noIdentityProvider;
   return {
     sessions: new SessionService(

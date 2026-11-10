@@ -30,6 +30,8 @@ export interface SessionStore {
   create(userId: string): Promise<Session>;
   find(token: string): Promise<Session | undefined>;
   delete(token: string): Promise<void>;
+  /** Verilen kullanıcıların tüm oturumlarını siler; bilinmeyen kimlikler ve boş liste sorun çıkarmaz. */
+  deleteByUserIds(userIds: readonly string[]): Promise<void>;
 }
 
 export interface UserRepository {
