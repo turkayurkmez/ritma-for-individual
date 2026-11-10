@@ -9,6 +9,7 @@ interface AuthValue {
   status: Status;
   user: User | null;
   login(email: string, password: string): Promise<void>;
+  loginWithGoogle(credential: string): Promise<void>;
   logout(): Promise<void>;
 }
 
@@ -39,6 +40,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setState({ status: 'authenticated', user });
   }, []);
 
+  const loginWithGoogle = useCallback(async (credential: string) => {
+    const user = await authApi.loginWithGoogle(credential);
+    setState({ status: 'authenticated', user });
+  }, []);
+
   const logout = useCallback(async () => {
     try {
       await authApi.logout();
@@ -47,7 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const value = useMemo(() => ({ ...state, login, logout }), [state, login, logout]);
+  const value = useMemo(() => ({ ...state, login, loginWithGoogle, logout }), [state, login, loginWithGoogle, logout]);
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 

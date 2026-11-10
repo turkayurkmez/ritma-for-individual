@@ -93,7 +93,6 @@
   font-family: var(--font-head);
   font-weight: 800;
 }
-.landing-lead { max-width: 34rem; margin: -1rem 0 2rem; color: var(--muted); font-size: 1.1rem; }
 
 .landing-footer { padding: 2.5rem 16px; border-top: var(--bw) solid var(--border); color: var(--muted); font-size: .95rem; }
 .landing-footer .container { display: flex; flex-wrap: wrap; gap: 1rem 2rem; justify-content: space-between; }

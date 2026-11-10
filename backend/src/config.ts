@@ -4,6 +4,8 @@ export interface Config {
   demoAccountsEnabled: boolean;
   /** PostgreSQL bağlantı adresi; boşsa veriler bellekte tutulur. */
   databaseUrl: string | undefined;
+  /** Google OAuth istemci kimliği; boşsa Google ile giriş kapalıdır. */
+  googleClientId: string | undefined;
 }
 
 export function loadConfig(env: NodeJS.ProcessEnv): Config {
@@ -14,5 +16,6 @@ export function loadConfig(env: NodeJS.ProcessEnv): Config {
     production,
     demoAccountsEnabled: demo === 'true' ? true : demo === 'false' ? false : !production,
     databaseUrl: env.DATABASE_URL || undefined,
+    googleClientId: env.GOOGLE_CLIENT_ID?.trim() || undefined,
   };
 }

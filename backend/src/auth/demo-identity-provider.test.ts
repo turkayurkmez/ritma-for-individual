@@ -22,12 +22,6 @@ test('authenticate does not mix up one user\'s password with another', async () 
   assert.equal(await provider.authenticate({ email: 'ayse@ritma.demo', password: 'demo-mehmet-123' }), undefined);
 });
 
-test('findUser returns the user by id', async () => {
-  const provider = new DemoIdentityProvider();
-  assert.equal((await provider.findUser('demo-user-mehmet'))?.email, 'mehmet@ritma.demo');
-  assert.equal(await provider.findUser('nope'), undefined);
-});
-
 test('plain passwords are not kept in the provider', () => {
   const dump = JSON.stringify(new DemoIdentityProvider());
   assert.ok(!dump.includes('demo-ayse-123'));

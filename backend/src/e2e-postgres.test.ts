@@ -7,6 +7,7 @@ import { upsertUsers } from './db/users.js';
 import { PostgresAppointmentRepository } from './repositories/postgres/appointment-repository.js';
 import { PostgresCustomerRepository } from './repositories/postgres/customer-repository.js';
 import { PostgresSessionStore } from './repositories/postgres/session-store.js';
+import { PostgresUserRepository } from './repositories/postgres/user-repository.js';
 import { AppointmentService } from './services/appointment-service.js';
 import { CustomerService } from './services/customer-service.js';
 import { AYSE, startTestServer } from './test-support.js';
@@ -24,7 +25,7 @@ after(async () => {
 function postgresDeps(): AppDeps {
   const customers = new PostgresCustomerRepository(db.pool);
   return {
-    sessions: new SessionService(new DemoIdentityProvider(), new PostgresSessionStore(db.pool)),
+    sessions: new SessionService(new DemoIdentityProvider(), new PostgresSessionStore(db.pool), new PostgresUserRepository(db.pool)),
     customers: new CustomerService(customers),
     appointments: new AppointmentService(new PostgresAppointmentRepository(db.pool), customers),
     production: false,

@@ -1,5 +1,6 @@
 import { NavLink, Outlet } from 'react-router';
 import { useAuth } from '../../auth/AuthProvider';
+import { TrialBanner } from './TrialBanner';
 import './PanelLayout.css';
 
 const TABS = [
@@ -12,6 +13,8 @@ const TABS = [
 export function PanelLayout() {
   const { user, logout } = useAuth();
   return (
+    <>
+    <TrialBanner />
     <div className="panel">
       <header className="panel-header">
         <span className="panel-brand">Ritma</span>
@@ -27,5 +30,6 @@ export function PanelLayout() {
         <Outlet />
       </main>
     </div>
+    </>
   );
 }

@@ -15,6 +15,8 @@ export interface AppDeps {
   customers: CustomerService;
   appointments: AppointmentService;
   production: boolean;
+  /** Google ile giriş açıksa OAuth Client ID'si; ön yüz düğmeyi buna göre gösterir. */
+  googleClientId?: string;
   staticDir?: string;
   /** Swagger arayüzü (/docs). Verilmezse ya da production iken kapalıdır. */
   docs?: DocsOptions;
@@ -27,7 +29,7 @@ export function createApp(deps: AppDeps): express.Express {
   app.get('/api/v1/health', (_req, res) => {
     res.json({ status: 'ok' });
   });
-  app.use('/api/v1/auth', createAuthRouter(deps.sessions, deps.production));
+  app.use('/api/v1/auth', createAuthRouter(deps.sessions, deps.production, deps.googleClientId));
   app.use('/api/v1/customers', createCustomerRouter(deps.sessions, deps.customers));
   app.use('/api/v1/appointments', createAppointmentRouter(deps.sessions, deps.appointments));
 

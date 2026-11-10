@@ -30,4 +30,8 @@ export class PostgresSessionStore implements SessionStore {
   async delete(token: string): Promise<void> {
     await this.pool.query('DELETE FROM sessions WHERE token_hash = $1', [digest(token)]);
   }
+
+  async deleteByUserIds(userIds: readonly string[]): Promise<void> {
+    await this.pool.query('DELETE FROM sessions WHERE user_id = ANY($1::text[])', [userIds]);
+  }
 }

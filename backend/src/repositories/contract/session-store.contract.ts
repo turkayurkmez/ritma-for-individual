@@ -47,4 +47,23 @@ export function sessionStoreContract(label: string, setup: SessionSetup, options
     const store = await ready();
     await store.delete('yok');
   });
+
+  t("deleteByUserIds removes only the given users' sessions", async () => {
+    const ctx = await setup();
+    await ctx.seedUser('u1');
+    await ctx.seedUser('u2');
+    const first = await ctx.store.create('u1');
+    const second = await ctx.store.create('u2');
+    await ctx.store.deleteByUserIds(['u1']);
+    assert.equal(await ctx.store.find(first.token), undefined);
+    assert.equal((await ctx.store.find(second.token))?.userId, 'u2');
+  });
+
+  t('deleteByUserIds ignores an empty list and unknown ids', async () => {
+    const store = await ready();
+    const session = await store.create('u1');
+    await store.deleteByUserIds([]);
+    await store.deleteByUserIds(['yok']);
+    assert.equal((await store.find(session.token))?.userId, 'u1');
+  });
 }

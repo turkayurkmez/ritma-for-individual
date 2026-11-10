@@ -1,5 +1,4 @@
 import { Link } from 'react-router';
-import { SignupForm } from './SignupForm';
 import './Landing.css';
 
 export function Landing() {
@@ -11,7 +10,7 @@ export function Landing() {
             <div>
               <h1>Ritma<span>.</span></h1>
               <p>Randevularınızı ve müşterilerinizi tek yerden, kendi ritminizde yönetin.</p>
-              <a className="cta" href="#erken-erisim">Erken erişim için kaydol</a>
+              <Link className="cta" to="/giris">İki hafta ücretsiz dene</Link>
             </div>
             <div className="landing-preview" role="img" aria-label="Ritma uygulama önizlemesi">
               <div className="landing-pv-bar" aria-hidden="true"><i></i><i></i><i></i></div>
@@ -70,15 +69,6 @@ export function Landing() {
             </div>
           </div>
         </section>
-
-        <section className="landing-section" id="erken-erisim">
-          <div className="container">
-            <span className="landing-tag">Erken erişim</span>
-            <h2>Listeye ilk yazılanlardan ol</h2>
-            <p className="landing-lead">Ritma hazır olduğunda ilk sana haber verelim.</p>
-            <SignupForm />
-          </div>
-        </section>
       </main>
 
       <footer className="landing-footer">
@@ -87,7 +77,6 @@ export function Landing() {
           <nav>
             <a href="#sorun-cozum">Sorun ve çözüm</a>
             <a href="#nasil-calisir">Nasıl çalışır</a>
-            <a href="#erken-erisim">Erken erişim</a>
             <Link to="/giris">Giriş</Link>
           </nav>
         </div>

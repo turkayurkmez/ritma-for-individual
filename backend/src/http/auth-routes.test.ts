@@ -1,6 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { AYSE, buildTestDeps, startTestServer } from '../test-support.js';
+import type { GoogleIdentity, GoogleTokenVerifier } from '../auth/google-token-verifier.js';
+import { unauthorized, upstreamError } from '../domain/errors.js';
+import { AYSE, buildTestDeps, buildTestSessions, startTestServer } from '../test-support.js';
 
 const json = { 'content-type': 'application/json' };
 
@@ -91,3 +93,154 @@ test('unknown API paths return a JSON 404', () =>
     assert.equal(res.status, 404);
     assert.equal(((await res.json()) as { error: { code: string } }).error.code, 'not_found');
   }));
+
+const CLIENT_ID = 'test-client.apps.googleusercontent.com';
+
+function fakeGoogle(identity: GoogleIdentity | Error | ((credential: string) => GoogleIdentity)): GoogleTokenVerifier {
+  return {
+    verify: async (credential) => {
+      if (identity instanceof Error) throw identity;
+      return typeof identity === 'function' ? identity(credential) : identity;
+    },
+  };
+}
+
+const ZEYNEP = { sub: 'a', email: 'zeynep@example.com', name: 'Zeynep Hoca' };
+
+const googleServer = (google: GoogleTokenVerifier) =>
+  startTestServer(buildTestDeps({ sessions: buildTestSessions(google), googleClientId: CLIENT_ID }));
+
+const postGoogle = (base: string, credential: unknown = 'kimlik') =>
+  post(base, '/auth/google', JSON.stringify({ credential }));
+
+test('POST /auth/google signs in a new Google user with a token, an HttpOnly cookie and the user', async () => {
+  const server = googleServer(fakeGoogle(ZEYNEP));
+  try {
+    const res = await postGoogle(server.baseUrl);
+    assert.equal(res.status, 200);
+    const body = (await res.json()) as { token: string; user: { email: string; displayName: string } };
+    assert.match(body.token, /^[0-9a-f]{64}$/);
+    assert.equal(body.user.email, ZEYNEP.email);
+    assert.equal(body.user.displayName, ZEYNEP.name);
+    const cookie = res.headers.get('set-cookie') ?? '';
+    assert.match(cookie, /ritma_session=/);
+    assert.match(cookie, /HttpOnly/);
+    const me = await fetch(`${server.baseUrl}/api/v1/auth/me`, { headers: { authorization: `Bearer ${body.token}` } });
+    assert.equal(me.status, 200);
+  } finally {
+    server.close();
+  }
+});
+
+test('the same Google account signs in as the same user twice', async () => {
+  const server = googleServer(fakeGoogle(ZEYNEP));
+  try {
+    const first = (await (await postGoogle(server.baseUrl)).json()) as { user: { id: string } };
+    const second = (await (await postGoogle(server.baseUrl)).json()) as { user: { id: string } };
+    assert.equal(first.user.id, second.user.id);
+  } finally {
+    server.close();
+  }
+});
+
+test("a Google user cannot see another Google user's customers", async () => {
+  const server = googleServer(
+    fakeGoogle((c) => (c === 'a' ? ZEYNEP : { sub: 'b', email: 'baska@example.com', name: 'Baska Kisi' })),
+  );
+  try {
+    const a = (await (await postGoogle(server.baseUrl, 'a')).json()) as { token: string };
+    const b = (await (await postGoogle(server.baseUrl, 'b')).json()) as { token: string };
+    const headersOf = (token: string) => ({ authorization: `Bearer ${token}`, 'content-type': 'application/json' });
+    const added = await fetch(`${server.baseUrl}/api/v1/customers`, {
+      method: 'POST',
+      headers: headersOf(a.token),
+      body: JSON.stringify({ firstName: 'Zeynep', lastName: 'Aksoy', birthDate: '1990-01-01', gender: 'female' }),
+    });
+    assert.equal(added.status, 201);
+    const customers = await fetch(`${server.baseUrl}/api/v1/customers`, { headers: headersOf(b.token) });
+    assert.doesNotMatch(await customers.text(), /Zeynep/);
+    const appointments = await fetch(`${server.baseUrl}/api/v1/appointments?from=2026-11-01&to=2026-11-30`, {
+      headers: headersOf(b.token),
+    });
+    assert.equal(appointments.status, 200);
+    assert.doesNotMatch(await appointments.text(), /Zeynep/);
+  } finally {
+    server.close();
+  }
+});
+
+test('POST /auth/google without a usable credential is 400 validation_error', async () => {
+  const server = googleServer(fakeGoogle(ZEYNEP));
+  try {
+    const responses = [await fetch(`${server.baseUrl}/api/v1/auth/google`, { method: 'POST' })];
+    for (const body of ['{}', JSON.stringify({ credential: 5 }), JSON.stringify({ credential: '' })]) {
+      responses.push(await post(server.baseUrl, '/auth/google', body));
+    }
+    for (const res of responses) {
+      assert.equal(res.status, 400);
+      assert.equal(((await res.json()) as { error: { code: string } }).error.code, 'validation_error');
+    }
+  } finally {
+    server.close();
+  }
+});
+
+test('an invalid Google token is 401 unauthorized', async () => {
+  const server = googleServer(fakeGoogle(unauthorized('Google kimliği geçersiz ya da süresi dolmuş.')));
+  try {
+    const res = await postGoogle(server.baseUrl);
+    assert.equal(res.status, 401);
+    const { error } = (await res.json()) as { error: { code: string; message: string } };
+    assert.equal(error.code, 'unauthorized');
+    assert.equal(error.message, 'Google kimliği geçersiz ya da süresi dolmuş.');
+  } finally {
+    server.close();
+  }
+});
+
+test('Google sign-in is 404 not_found when it is not configured', () =>
+  withServer(async ({ baseUrl }) => {
+    const res = await postGoogle(baseUrl);
+    assert.equal(res.status, 404);
+    const { error } = (await res.json()) as { error: { code: string; message: string } };
+    assert.equal(error.code, 'not_found');
+    assert.equal(error.message, 'Google ile giriş açık değil.');
+  }));
+
+test('a Google outage is 502 upstream_error', async () => {
+  const server = googleServer(fakeGoogle(upstreamError('Google ile bağlantı kurulamadı, biraz sonra tekrar dene.')));
+  try {
+    const res = await postGoogle(server.baseUrl);
+    assert.equal(res.status, 502);
+    assert.equal(((await res.json()) as { error: { code: string } }).error.code, 'upstream_error');
+  } finally {
+    server.close();
+  }
+});
+
+test('a taken email is 409 conflict', async () => {
+  const server = googleServer(fakeGoogle({ sub: 'x', email: AYSE.email }));
+  try {
+    const res = await postGoogle(server.baseUrl);
+    assert.equal(res.status, 409);
+    assert.equal(((await res.json()) as { error: { code: string } }).error.code, 'conflict');
+  } finally {
+    server.close();
+  }
+});
+
+test('GET /auth/config needs no login and returns the Client ID or null', async () => {
+  const server = googleServer(fakeGoogle(ZEYNEP));
+  try {
+    const res = await fetch(`${server.baseUrl}/api/v1/auth/config`);
+    assert.equal(res.status, 200);
+    assert.deepEqual(await res.json(), { googleClientId: CLIENT_ID });
+  } finally {
+    server.close();
+  }
+  await withServer(async ({ baseUrl }) => {
+    const res = await fetch(`${baseUrl}/api/v1/auth/config`);
+    assert.equal(res.status, 200);
+    assert.deepEqual(await res.json(), { googleClientId: null });
+  });
+});

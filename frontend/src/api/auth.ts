@@ -23,3 +23,16 @@ export async function fetchMe(): Promise<User | null> {
 export async function logout(): Promise<void> {
   await request<void>('/auth/logout', { method: 'POST' });
 }
+
+export async function loginWithGoogle(credential: string): Promise<User> {
+  const result = await request<{ user: User }>('/auth/google', {
+    method: 'POST',
+    body: { credential },
+    skipUnauthorizedHandler: true,
+  });
+  return result.user;
+}
+
+export function fetchAuthConfig(): Promise<{ googleClientId: string | null }> {
+  return request<{ googleClientId: string | null }>('/auth/config', { skipUnauthorizedHandler: true });
+}

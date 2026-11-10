@@ -1,8 +1,8 @@
-export type ErrorCode = 'validation_error' | 'unauthorized' | 'not_found' | 'conflict';
+export type ErrorCode = 'validation_error' | 'unauthorized' | 'not_found' | 'conflict' | 'upstream_error';
 
 export class AppError extends Error {
   constructor(
-    readonly status: 400 | 401 | 404 | 409,
+    readonly status: 400 | 401 | 404 | 409 | 502,
     readonly code: ErrorCode,
     message: string,
   ) {
@@ -14,3 +14,4 @@ export const validationError = (message: string) => new AppError(400, 'validatio
 export const unauthorized = (message: string) => new AppError(401, 'unauthorized', message);
 export const notFound = (message: string) => new AppError(404, 'not_found', message);
 export const conflict = (message: string) => new AppError(409, 'conflict', message);
+export const upstreamError = (message: string) => new AppError(502, 'upstream_error', message);
