@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { loadConfig } from './config.js';
 
 test('defaults to port 3000 with demo accounts on outside production', () => {
-  assert.deepEqual(loadConfig({}), { port: 3000, production: false, demoAccountsEnabled: true, databaseUrl: undefined });
+  assert.deepEqual(loadConfig({}), { port: 3000, production: false, demoAccountsEnabled: true, databaseUrl: undefined, googleClientId: undefined });
 });
 
 test('demo accounts are off in production unless explicitly enabled', () => {
@@ -22,4 +22,12 @@ test('PORT overrides the default', () => {
 test('DATABASE_URL is read when set and empty counts as unset', () => {
   assert.equal(loadConfig({ DATABASE_URL: 'postgres://u:p@host/db' }).databaseUrl, 'postgres://u:p@host/db');
   assert.equal(loadConfig({ DATABASE_URL: '' }).databaseUrl, undefined);
+});
+
+test('GOOGLE_CLIENT_ID is read when set, trimmed, and empty counts as unset', () => {
+  assert.equal(
+    loadConfig({ GOOGLE_CLIENT_ID: ' abc.apps.googleusercontent.com ' }).googleClientId,
+    'abc.apps.googleusercontent.com',
+  );
+  assert.equal(loadConfig({ GOOGLE_CLIENT_ID: '' }).googleClientId, undefined);
 });
