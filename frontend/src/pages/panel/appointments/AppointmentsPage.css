@@ -1,0 +1,58 @@
+.appointments { display: grid; gap: 1.25rem; }
+.appointments-title { font-family: var(--font-head); font-size: 1.4rem; margin: 0; }
+.appointments-retry {
+  padding: .45rem .9rem;
+  border: var(--bw) solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--fg);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.appointments-retry:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.appointments-error { color: var(--danger); font-weight: 600; }
+.appointments-list { display: grid; gap: .75rem; list-style: none; padding: 0; margin: 0; }
+.appointments-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  padding: 1rem;
+  border: var(--bw) solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+.appointments-item-today {
+  border-color: var(--accent);
+  background: var(--glow);
+}
+.appointments-item-cancelled { opacity: .6; }
+.appointments-item-cancelled .appointments-name { text-decoration: line-through; }
+.appointments-info { display: grid; gap: .2rem; }
+.appointments-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem;
+}
+.appointments-date { font-family: var(--font-head); font-weight: 700; }
+.appointments-time { font-family: var(--font-head); font-weight: 700; color: var(--accent); }
+.appointments-today-badge {
+  padding: .1rem .45rem;
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: var(--surface);
+  font-family: var(--font-head);
+  font-size: .75rem;
+  font-weight: 700;
+}
+.appointments-name { font-weight: 600; }
+.appointments-status { color: var(--muted); }
+.appointments-note { color: var(--muted); font-style: italic; }
+
+@media (max-width: 600px) {
+  .appointments-item { flex-direction: column; align-items: stretch; }
+}
