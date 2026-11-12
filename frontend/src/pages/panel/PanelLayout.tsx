@@ -7,6 +7,7 @@ const TABS = [
   { to: '/panel', label: 'Bugün', end: true },
   { to: '/panel/hafta', label: 'Hafta', end: false },
   { to: '/panel/ay', label: 'Ay', end: false },
+  { to: '/panel/randevular', label: 'Randevular', end: false },
   { to: '/panel/musteriler', label: 'Müşteriler', end: false },
 ];
 

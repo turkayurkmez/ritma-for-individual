@@ -1,0 +1,17 @@
+{
+  "block-env-access": {
+    "enabled": true,
+    "PreToolUse": [
+      {
+        "matcher": "read_file|view_file|edit_file|write_file|run_command",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node hooks/block-env.mjs",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}

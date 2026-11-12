@@ -2,6 +2,7 @@ import { Route, Routes } from 'react-router';
 import { RequireAuth } from './auth/RequireAuth';
 import { Landing } from './pages/landing/Landing';
 import { Login } from './pages/login/Login';
+import { AppointmentsPage } from './pages/panel/appointments/AppointmentsPage';
 import { CustomersPage } from './pages/panel/customers/CustomersPage';
 import { DailyPage } from './pages/panel/daily/DailyPage';
 import { MonthlyPage } from './pages/panel/monthly/MonthlyPage';
@@ -22,6 +23,7 @@ export function App() {
           <Route index element={<DailyPage />} />
           <Route path="hafta" element={<WeeklyPage />} />
           <Route path="ay" element={<MonthlyPage />} />
+          <Route path="randevular" element={<AppointmentsPage />} />
           <Route path="musteriler" element={<CustomersPage />} />
         </Route>
       </Route>

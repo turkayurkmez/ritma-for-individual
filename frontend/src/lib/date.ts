@@ -79,3 +79,10 @@ export function addHour(time: string): string {
   const hours = Number(match[1]) + 1;
   return hours > 23 ? '23:59' : `${pad(hours)}:${match[2]}`;
 }
+
+export function compareDateAndTime(
+  a: { date: string; startTime: string },
+  b: { date: string; startTime: string },
+): number {
+  return a.date.localeCompare(b.date) || a.startTime.localeCompare(b.startTime);
+}

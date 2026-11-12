@@ -6,14 +6,14 @@ afterEach(() => vi.unstubAllGlobals());
 
 const user = { id: 'u1', email: 'ayse@ritma.demo', displayName: 'Ayşe Yılmaz' };
 
-test('shows the display name and the four tabs', async () => {
+test('shows the display name and the five tabs', async () => {
   stubFetch({ 'GET /api/v1/auth/me': () => ({ body: { user } }) });
   renderApp(<App />, { route: '/panel' });
   expect(await screen.findByText('Ayşe Yılmaz')).toBeTruthy();
-  const hrefs = ['Bugün', 'Hafta', 'Ay', 'Müşteriler'].map((name) =>
+  const hrefs = ['Bugün', 'Hafta', 'Ay', 'Randevular', 'Müşteriler'].map((name) =>
     screen.getByRole('link', { name }).getAttribute('href'),
   );
-  expect(hrefs).toEqual(['/panel', '/panel/hafta', '/panel/ay', '/panel/musteriler']);
+  expect(hrefs).toEqual(['/panel', '/panel/hafta', '/panel/ay', '/panel/randevular', '/panel/musteriler']);
 });
 
 test('Çıkış calls logout and returns to the login page', async () => {
