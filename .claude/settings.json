@@ -15,5 +15,8 @@
       "Bash(type *.env)",
       "Bash(Get-Content *.env)"
     ]
+  },
+  "enabledPlugins": {
+    "render@claude-plugins-official": true
   }
 }
