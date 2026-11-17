@@ -1,6 +1,6 @@
 # Ritma: Doğal Dille Randevu Asistanı ve Randevu Öncesi Akıllı E-posta Bildirimi Tasarımı
 
-Tarih: 2026-11-12. Durum: onay bekliyor.
+Tarih: 2026-11-12. Durum: onaylandı ve uygulandı.
 
 Belgede "**Senin kararın**" diye işaretli maddeler kullanıcının söylediği şeylerdir. "**Benim kararım**" işaretliler, kullanıcıya sorulmadan verilmiş varsayılanlardır; okurken itiraz edilebilir.
 
