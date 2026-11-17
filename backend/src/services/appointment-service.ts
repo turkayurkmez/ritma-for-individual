@@ -36,6 +36,13 @@ export class AppointmentService {
     if (merged.customerId !== existing.customerId) {
       await this.requireActiveCustomer(userId, merged.customerId);
     }
+    if (
+      merged.date !== existing.date ||
+      merged.startTime !== existing.startTime ||
+      merged.status !== 'scheduled'
+    ) {
+      delete merged.reminderSentAt;
+    }
     return this.save(merged);
   }
 
@@ -64,7 +71,14 @@ export class AppointmentService {
     const customer = await this.customers.findById(appointment.userId, appointment.customerId);
     if (!customer) throw notFound('Müşteri bulunamadı.');
     return {
-      ...appointment,
+      id: appointment.id,
+      userId: appointment.userId,
+      customerId: appointment.customerId,
+      date: appointment.date,
+      startTime: appointment.startTime,
+      endTime: appointment.endTime,
+      status: appointment.status,
+      note: appointment.note,
       customer: { id: customer.id, firstName: customer.firstName, lastName: customer.lastName },
     };
   }

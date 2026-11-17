@@ -11,8 +11,9 @@ const status = (code: number) => (e: unknown) => e instanceof AppError && e.stat
 
 async function setup() {
   const customerRepo = new MemoryCustomerRepository();
+  const appointmentRepo = new MemoryAppointmentRepository();
   const customers = new CustomerService(customerRepo);
-  const service = new AppointmentService(new MemoryAppointmentRepository(), customerRepo);
+  const service = new AppointmentService(appointmentRepo, customerRepo);
   const ilgaz = await customers.create('u1', {
     firstName: 'Ilgaz',
     lastName: 'Demir',
@@ -28,7 +29,7 @@ async function setup() {
     note: '',
     ...over,
   });
-  return { service, customers, ilgaz, input };
+  return { service, customers, appointmentRepo, ilgaz, input };
 }
 
 test('create returns the appointment with the customer name', async () => {
@@ -119,4 +120,16 @@ test('remove deletes the appointment permanently', async () => {
   const created = await service.create('u1', input());
   await service.remove('u1', created.id);
   await assert.rejects(service.get('u1', created.id), status(404));
+});
+
+test('updating note keeps reminderSentAt, but changing time, date or status resets it', async () => {
+  const { service, appointmentRepo, input } = await setup();
+  const created = await service.create('u1', input());
+  await appointmentRepo.markReminderSent('u1', created.id, '2026-11-02T09:30:00.000Z');
+
+  await service.update('u1', created.id, { note: 'yeni not' });
+  assert.equal((await appointmentRepo.findById('u1', created.id))?.reminderSentAt, '2026-11-02T09:30:00.000Z');
+
+  await service.update('u1', created.id, { startTime: '10:30', endTime: '11:30' });
+  assert.equal((await appointmentRepo.findById('u1', created.id))?.reminderSentAt, undefined);
 });

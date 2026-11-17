@@ -1,12 +1,16 @@
 import { randomUUID } from 'node:crypto';
 import type pg from 'pg';
-import type { User } from '../../domain/types.js';
-import type { UserRepository } from '../types.js';
+import type { ReminderMinutes, User } from '../../domain/types.js';
+import type { UserRepository, UserWithSettings } from '../types.js';
 
 interface UserRow {
   id: string;
   email: string;
   display_name: string;
+}
+
+interface UserWithSettingsRow extends UserRow {
+  reminder_minutes_before: ReminderMinutes | null;
 }
 
 function toUser(row: UserRow): User {
@@ -35,5 +39,32 @@ export class PostgresUserRepository implements UserRepository {
       [input.googleSub],
     );
     return existing.rows[0] ? toUser(existing.rows[0]) : undefined;
+  }
+
+  async getReminderSettings(userId: string): Promise<ReminderMinutes | null> {
+    const { rows } = await this.pool.query<{ reminder_minutes_before: ReminderMinutes | null }>(
+      'SELECT reminder_minutes_before FROM users WHERE id = $1',
+      [userId],
+    );
+    return rows[0] ? rows[0].reminder_minutes_before : null;
+  }
+
+  async updateReminderSettings(userId: string, minutes: ReminderMinutes | null): Promise<ReminderMinutes | null> {
+    await this.pool.query('UPDATE users SET reminder_minutes_before = $2 WHERE id = $1', [userId, minutes]);
+    return minutes;
+  }
+
+  async listUsersWithRemindersEnabled(): Promise<UserWithSettings[]> {
+    const { rows } = await this.pool.query<UserWithSettingsRow>(
+      'SELECT id, email, display_name, reminder_minutes_before FROM users WHERE reminder_minutes_before IS NOT NULL ORDER BY id',
+    );
+    return rows
+      .filter((r): r is UserWithSettingsRow & { reminder_minutes_before: ReminderMinutes } => r.reminder_minutes_before !== null)
+      .map((r) => ({
+        id: r.id,
+        email: r.email,
+        displayName: r.display_name,
+        reminderMinutesBefore: r.reminder_minutes_before,
+      }));
   }
 }

@@ -49,4 +49,24 @@ export function userRepositoryContract(label: string, setup: UserSetup, options:
     const { repo } = await setup();
     assert.equal(await repo.findById('user-yok'), undefined);
   });
+
+  t('reminder settings default to 30, can be updated or turned off, and filter enabled users', async () => {
+    const { repo } = await setup();
+    const u1 = await repo.findOrCreateByGoogle(google);
+    const u2 = await repo.findOrCreateByGoogle({ googleSub: 'sub-2', email: 'b@gmail.com', displayName: 'Mehmet' });
+    assert.ok(u1 && u2);
+
+    assert.equal(await repo.getReminderSettings(u1.id), 30);
+    assert.equal(await repo.updateReminderSettings(u1.id, 15), 15);
+    assert.equal(await repo.getReminderSettings(u1.id), 15);
+
+    assert.equal(await repo.updateReminderSettings(u2.id, null), null);
+    assert.equal(await repo.getReminderSettings(u2.id), null);
+
+    const enabled = await repo.listUsersWithRemindersEnabled();
+    assert.deepEqual(
+      enabled.map((u) => ({ id: u.id, reminderMinutesBefore: u.reminderMinutesBefore })),
+      [{ id: u1.id, reminderMinutesBefore: 15 }],
+    );
+  });
 }
