@@ -1,4 +1,4 @@
-import type { Appointment, Customer, User } from '../domain/types.js';
+import type { Appointment, Customer, ReminderMinutes, ReminderNotification, User } from '../domain/types.js';
 
 export interface CustomerRepository {
   create(customer: Customer): Promise<Customer>;
@@ -12,11 +12,15 @@ export interface AppointmentRepository {
   findById(userId: string, id: string): Promise<Appointment | undefined>;
   /** İki ucu dahil; tarih, sonra başlangıç saatine göre sıralı. */
   listByDateRange(userId: string, from: string, to: string): Promise<Appointment[]>;
+  /** Müşteriye ait tüm randevuları tarih ve başlangıç saatine göre sıralı döndürür. */
+  listByCustomer(userId: string, customerId: string): Promise<Appointment[]>;
   /**
    * Ekler ya da (id'ye göre) günceller. İptal edilmemiş bir randevu, aynı kullanıcının
    * aynı günündeki başka bir aktif randevuyla kesişirse hiçbir şey yazmadan `undefined` döner.
    */
   saveIfNoConflict(appointment: Appointment): Promise<Appointment | undefined>;
+  /** Randevu için hatırlatma e-postasının gönderildiği zamanı işaretler. */
+  markReminderSent(userId: string, id: string, sentAt: string): Promise<void>;
   delete(userId: string, id: string): Promise<boolean>;
 }
 
@@ -34,9 +38,21 @@ export interface SessionStore {
   deleteByUserIds(userIds: readonly string[]): Promise<void>;
 }
 
+export interface UserWithSettings extends User {
+  reminderMinutesBefore: ReminderMinutes;
+}
+
 export interface UserRepository {
   findById(id: string): Promise<User | undefined>;
   /** Aynı googleSub varsa o kullanıcıyı döndürür (e-posta/ad güncellenmez); yoksa yeni kullanıcı açar.
    *  E-posta (büyük/küçük harf fark etmez) başka bir kullanıcıda varsa hiçbir şey yazmadan `undefined` döner. */
   findOrCreateByGoogle(input: { googleSub: string; email: string; displayName: string }): Promise<User | undefined>;
+  getReminderSettings(userId: string): Promise<ReminderMinutes | null>;
+  updateReminderSettings(userId: string, minutes: ReminderMinutes | null): Promise<ReminderMinutes | null>;
+  listUsersWithRemindersEnabled(): Promise<UserWithSettings[]>;
+}
+
+export interface ReminderNotificationRepository {
+  create(notification: ReminderNotification): Promise<ReminderNotification>;
+  listByUser(userId: string, limit?: number): Promise<ReminderNotification[]>;
 }

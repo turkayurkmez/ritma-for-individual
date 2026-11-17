@@ -1,3 +1,5 @@
+import { FallbackAiAssistant } from './ai/fallback-ai-assistant.js';
+import { GeminiAiAssistant } from './ai/gemini-ai-assistant.js';
 import type { AppDeps } from './app.js';
 import { DEMO_USERS, DemoIdentityProvider } from './auth/demo-identity-provider.js';
 import type { IdentityProvider } from './auth/identity-provider.js';
@@ -8,15 +10,25 @@ import { createPool } from './db/pool.js';
 import { upsertUsers } from './db/users.js';
 import { MemoryAppointmentRepository } from './repositories/memory/appointment-repository.js';
 import { MemoryCustomerRepository } from './repositories/memory/customer-repository.js';
+import { MemoryReminderNotificationRepository } from './repositories/memory/reminder-notification-repository.js';
 import { MemorySessionStore } from './repositories/memory/session-store.js';
 import { MemoryUserRepository } from './repositories/memory/user-repository.js';
 import { PostgresAppointmentRepository } from './repositories/postgres/appointment-repository.js';
 import { PostgresCustomerRepository } from './repositories/postgres/customer-repository.js';
+import { PostgresReminderNotificationRepository } from './repositories/postgres/reminder-notification-repository.js';
 import { PostgresSessionStore } from './repositories/postgres/session-store.js';
 import { PostgresUserRepository } from './repositories/postgres/user-repository.js';
-import type { AppointmentRepository, CustomerRepository, SessionStore, UserRepository } from './repositories/types.js';
+import type {
+  AppointmentRepository,
+  CustomerRepository,
+  ReminderNotificationRepository,
+  SessionStore,
+  UserRepository,
+} from './repositories/types.js';
 import { AppointmentService } from './services/appointment-service.js';
 import { CustomerService } from './services/customer-service.js';
+import { ConsoleEmailSender } from './services/email-sender.js';
+import { ReminderService } from './services/reminder-service.js';
 
 /** Demo hesaplar kapalıyken hiç kimse giriş yapamaz. */
 const noIdentityProvider: IdentityProvider = {
@@ -28,6 +40,7 @@ interface Stores {
   appointments: AppointmentRepository;
   sessions: SessionStore;
   users: UserRepository;
+  notifications: ReminderNotificationRepository;
 }
 
 /** DATABASE_URL varsa Postgres, yoksa bellek. Bağlantı kurulamazsa adresi göstermeden hata verir. */
@@ -38,6 +51,7 @@ async function buildStores(databaseUrl: string | undefined, seedDemoUsers: boole
       appointments: new MemoryAppointmentRepository(),
       sessions: new MemorySessionStore(),
       users: new MemoryUserRepository(seedDemoUsers ? DEMO_USERS : []),
+      notifications: new MemoryReminderNotificationRepository(),
     };
   }
   const pool = createPool(databaseUrl);
@@ -53,6 +67,7 @@ async function buildStores(databaseUrl: string | undefined, seedDemoUsers: boole
     appointments: new PostgresAppointmentRepository(pool),
     sessions: new PostgresSessionStore(pool),
     users: new PostgresUserRepository(pool),
+    notifications: new PostgresReminderNotificationRepository(pool),
   };
 }
 
@@ -61,6 +76,17 @@ export async function buildDeps(env: NodeJS.ProcessEnv): Promise<AppDeps> {
   const stores = await buildStores(config.databaseUrl, config.demoAccountsEnabled);
   if (!config.demoAccountsEnabled) await stores.sessions.deleteByUserIds(DEMO_USERS.map((u) => u.id));
   const provider = config.demoAccountsEnabled ? new DemoIdentityProvider() : noIdentityProvider;
+  const ai = config.geminiApiKey
+    ? new GeminiAiAssistant(config.geminiApiKey, config.geminiModel)
+    : new FallbackAiAssistant();
+  const reminders = new ReminderService(
+    stores.users,
+    stores.appointments,
+    stores.customers,
+    stores.notifications,
+    ai,
+    new ConsoleEmailSender(),
+  );
   return {
     sessions: new SessionService(
       provider,
@@ -70,6 +96,8 @@ export async function buildDeps(env: NodeJS.ProcessEnv): Promise<AppDeps> {
     ),
     customers: new CustomerService(stores.customers),
     appointments: new AppointmentService(stores.appointments, stores.customers),
+    ai,
+    reminders,
     production: config.production,
     googleClientId: config.googleClientId,
   };

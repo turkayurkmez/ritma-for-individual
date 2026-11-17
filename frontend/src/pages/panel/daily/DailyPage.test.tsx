@@ -273,3 +273,90 @@ test('the empty-state "Müşteri ekle" is not shown when the day has appointment
   await screen.findByText('Ayşe Kaya');
   expect(screen.queryByRole('button', { name: 'Müşteri ekle' })).toBeNull();
 });
+
+test('natural language bar parses a prompt for an existing customer and opens pre-filled AppointmentForm', async () => {
+  stubFetch({
+    [DAY]: () => ({ body: { appointments: [] } }),
+    [CUSTOMERS]: () => ({ body: { customers: [ayse, ali] } }),
+    'POST /api/v1/ai/parse-appointment': () => ({
+      body: {
+        customerId: 'c2',
+        suggestedCustomer: null,
+        date: '2026-11-04',
+        startTime: '14:00',
+        endTime: '15:00',
+        note: 'Kontrol seansı',
+      },
+    }),
+  });
+  renderApp(<DailyPage />, { route: ROUTE });
+  await screen.findByText('Bu gün için randevu yok.');
+
+  const input = screen.getByLabelText('Hızlı randevu komutu');
+  fireEvent.change(input, { target: { value: 'Yarın 14:00 Ali Veli kontrol seansı' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Oluştur' }));
+
+  const dialog = await screen.findByRole('dialog');
+  await within(dialog).findByRole('option', { name: 'Ali Veli' });
+  expect((within(dialog).getByLabelText('Müşteri') as HTMLSelectElement).value).toBe('c2');
+  expect((within(dialog).getByLabelText('Tarih') as HTMLInputElement).value).toBe('2026-11-04');
+  expect((within(dialog).getByLabelText('Başlangıç') as HTMLInputElement).value).toBe('14:00');
+  expect((within(dialog).getByLabelText('Bitiş') as HTMLInputElement).value).toBe('15:00');
+  expect((within(dialog).getByLabelText('Not') as HTMLTextAreaElement).value).toBe('Kontrol seansı');
+});
+
+test('natural language bar opens CustomerForm first when customer is unknown, then chains to AppointmentForm on save', async () => {
+  const newCustomer: Customer = {
+    id: 'c-new',
+    userId: 'u1',
+    firstName: 'Zeynep',
+    lastName: 'Demir',
+    birthDate: '1993-02-10',
+    gender: 'female',
+    deletedAt: null,
+  };
+  let customerSaved = false;
+  stubFetch({
+    [DAY]: () => ({ body: { appointments: [] } }),
+    [CUSTOMERS]: () => ({ body: { customers: customerSaved ? [ayse, ali, newCustomer] : [ayse, ali] } }),
+    'POST /api/v1/ai/parse-appointment': () => ({
+      body: {
+        customerId: null,
+        suggestedCustomer: { firstName: 'Zeynep', lastName: 'Demir' },
+        date: '2026-11-03',
+        startTime: '16:00',
+        endTime: '17:00',
+        note: 'İlk değerlendirme',
+      },
+    }),
+    'POST /api/v1/customers': () => {
+      customerSaved = true;
+      return { status: 201, body: { customer: newCustomer } };
+    },
+  });
+
+  renderApp(<DailyPage />, { route: ROUTE });
+  await screen.findByText('Bu gün için randevu yok.');
+
+  fireEvent.change(screen.getByLabelText('Hızlı randevu komutu'), {
+    target: { value: 'Bugün 16:00 Zeynep Demir ilk değerlendirme' },
+  });
+  fireEvent.click(screen.getByRole('button', { name: 'Oluştur' }));
+
+  const custDialog = await screen.findByRole('dialog');
+  expect(within(custDialog).getByText(/kayıtlı değil/i)).toBeTruthy();
+  expect((within(custDialog).getByLabelText('Ad') as HTMLInputElement).value).toBe('Zeynep');
+  expect((within(custDialog).getByLabelText('Soyad') as HTMLInputElement).value).toBe('Demir');
+
+  fireEvent.change(within(custDialog).getByLabelText('Doğum tarihi'), { target: { value: '1993-02-10' } });
+  fireEvent.change(within(custDialog).getByLabelText('Cinsiyet'), { target: { value: 'female' } });
+  fireEvent.click(within(custDialog).getByRole('button', { name: 'Kaydet' }));
+
+  // Müşteri kaydedilince otomatik olarak dolu AppointmentForm açılır
+  await screen.findByRole('heading', { name: 'Randevu ekle' });
+  const apptDialog = screen.getByRole('dialog');
+  await within(apptDialog).findByRole('option', { name: 'Zeynep Demir' });
+  expect((within(apptDialog).getByLabelText('Müşteri') as HTMLSelectElement).value).toBe('c-new');
+  expect((within(apptDialog).getByLabelText('Başlangıç') as HTMLInputElement).value).toBe('16:00');
+  expect((within(apptDialog).getByLabelText('Not') as HTMLTextAreaElement).value).toBe('İlk değerlendirme');
+});

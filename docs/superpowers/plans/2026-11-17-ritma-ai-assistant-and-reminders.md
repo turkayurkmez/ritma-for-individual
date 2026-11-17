@@ -33,7 +33,7 @@ Spec'in ima ettiği ama düz akışta gözden kaçabilecek kritik durumlar (her 
 
 ---
 
-### Task 1: `GEMINI_API_KEY` yapılandırması ve alan tipleri (`domain/types.ts`)
+### Task 1: `GEMINI_API_KEY`, `GEMINI_MODEL` yapılandırması ve alan tipleri (`domain/types.ts`)
 
 **Files:**
 - Modify: `backend/src/config.ts`, `backend/src/config.test.ts`
@@ -45,6 +45,8 @@ Spec'in ima ettiği ama düz akışta gözden kaçabilecek kritik durumlar (her 
   ```ts
   // config.ts
   Config.geminiApiKey: string | undefined;
+  Config.geminiModel: string; // varsayılan: 'gemini-2.5-flash'
+
 
   // domain/types.ts
   export type ReminderMinutes = 15 | 30 | 60;

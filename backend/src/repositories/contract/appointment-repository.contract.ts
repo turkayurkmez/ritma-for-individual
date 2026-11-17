@@ -119,4 +119,26 @@ export function appointmentRepositoryContract(label: string, setup: AppointmentS
     ]);
     assert.equal(results.filter((r) => r !== undefined).length, 1);
   });
+
+  t('listByCustomer returns only that user and customer appointments ordered by date and time', async () => {
+    const repo = await ready();
+    await repo.saveIfNoConflict(appointment({ id: 'a1', date: '2026-11-06', startTime: '14:00', endTime: '15:00' }));
+    await repo.saveIfNoConflict(appointment({ id: 'a2', date: '2026-11-05', startTime: '09:00', endTime: '10:00' }));
+    await repo.saveIfNoConflict(appointment({ id: 'a3', userId: 'u2', customerId: 'c2', date: '2026-11-05' }));
+    const list = await repo.listByCustomer('u1', 'c1');
+    assert.deepEqual(list.map((a) => a.id), ['a2', 'a1']);
+  });
+
+  t('markReminderSent records reminderSentAt and saving without reminderSentAt clears it', async () => {
+    const repo = await ready();
+    await repo.saveIfNoConflict(appointment({ id: 'a1' }));
+    const sentAt = '2026-11-05T09:30:00.000Z';
+    await repo.markReminderSent('u1', 'a1', sentAt);
+    const afterMark = await repo.findById('u1', 'a1');
+    assert.equal(afterMark?.reminderSentAt, sentAt);
+
+    await repo.saveIfNoConflict(appointment({ id: 'a1', startTime: '11:00', endTime: '12:00' }));
+    const afterReschedule = await repo.findById('u1', 'a1');
+    assert.equal(afterReschedule?.reminderSentAt, undefined);
+  });
 }

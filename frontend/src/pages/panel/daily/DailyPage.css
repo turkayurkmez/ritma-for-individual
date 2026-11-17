@@ -15,6 +15,31 @@
 .daily-action:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 .daily-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; }
 .daily-title { font-family: var(--font-head); font-size: 1.4rem; }
+.daily-ai-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  padding: .75rem;
+  border: var(--bw) solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+.daily-ai-input {
+  flex: 1;
+  min-width: 12rem;
+  padding: .5rem .75rem;
+  border: var(--bw) solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--fg);
+  font: inherit;
+}
+.daily-ai-input:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.daily-ai-submit {
+  background: var(--accent);
+  color: var(--bg);
+}
 .daily-list { display: grid; gap: .75rem; list-style: none; padding: 0; margin: 0; }
 .daily-item {
   display: flex;
@@ -46,5 +71,6 @@
   .daily-item { flex-direction: column; align-items: stretch; }
   .daily-actions .daily-action { flex: 1; }
   .daily-head .cta,
-  .daily-empty .cta { width: 100%; }
+  .daily-empty .cta,
+  .daily-ai-submit { width: 100%; }
 }

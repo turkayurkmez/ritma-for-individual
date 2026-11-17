@@ -11,13 +11,14 @@ interface AppointmentRow {
   end_time: string;
   status: AppointmentStatus;
   note: string;
+  reminder_sent_at: Date | string | null;
 }
 
-const COLUMNS = 'id, user_id, customer_id, date, start_time, end_time, status, note';
+const COLUMNS = 'id, user_id, customer_id, date, start_time, end_time, status, note, reminder_sent_at';
 const EXCLUSION_VIOLATION = '23P01';
 
 function toAppointment(row: AppointmentRow): Appointment {
-  return {
+  const appointment: Appointment = {
     id: row.id,
     userId: row.user_id,
     customerId: row.customer_id,
@@ -27,6 +28,10 @@ function toAppointment(row: AppointmentRow): Appointment {
     status: row.status,
     note: row.note,
   };
+  if (row.reminder_sent_at) {
+    appointment.reminderSentAt = new Date(row.reminder_sent_at).toISOString();
+  }
+  return appointment;
 }
 
 export class PostgresAppointmentRepository implements AppointmentRepository {
@@ -48,15 +53,25 @@ export class PostgresAppointmentRepository implements AppointmentRepository {
     return rows.map(toAppointment);
   }
 
+  async listByCustomer(userId: string, customerId: string): Promise<Appointment[]> {
+    const { rows } = await this.pool.query<AppointmentRow>(
+      `SELECT ${COLUMNS} FROM appointments WHERE user_id = $1 AND customer_id = $2 ORDER BY date, start_time, id`,
+      [userId, customerId],
+    );
+    return rows.map(toAppointment);
+  }
+
   /** Çakışmayı veritabanındaki EXCLUDE kısıtı denetler; kontrol ve yazma tek ifadedir. */
   async saveIfNoConflict(appointment: Appointment): Promise<Appointment | undefined> {
     try {
-      await this.pool.query(
-        `INSERT INTO appointments (${COLUMNS}) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      const { rows } = await this.pool.query<AppointmentRow>(
+        `INSERT INTO appointments (${COLUMNS}) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
          ON CONFLICT (id) DO UPDATE SET
            customer_id = EXCLUDED.customer_id, date = EXCLUDED.date, start_time = EXCLUDED.start_time,
-           end_time = EXCLUDED.end_time, status = EXCLUDED.status, note = EXCLUDED.note
-         WHERE appointments.user_id = EXCLUDED.user_id`,
+           end_time = EXCLUDED.end_time, status = EXCLUDED.status, note = EXCLUDED.note,
+           reminder_sent_at = EXCLUDED.reminder_sent_at
+         WHERE appointments.user_id = EXCLUDED.user_id
+         RETURNING ${COLUMNS}`,
         [
           appointment.id,
           appointment.userId,
@@ -66,13 +81,22 @@ export class PostgresAppointmentRepository implements AppointmentRepository {
           appointment.endTime,
           appointment.status,
           appointment.note,
+          appointment.reminderSentAt ?? null,
         ],
       );
-      return appointment;
+      return rows[0] ? toAppointment(rows[0]) : undefined;
     } catch (error) {
       if ((error as { code?: string }).code === EXCLUSION_VIOLATION) return undefined;
       throw error;
     }
+  }
+
+  async markReminderSent(userId: string, id: string, sentAt: string): Promise<void> {
+    await this.pool.query('UPDATE appointments SET reminder_sent_at = $3 WHERE id = $1 AND user_id = $2', [
+      id,
+      userId,
+      sentAt,
+    ]);
   }
 
   async delete(userId: string, id: string): Promise<boolean> {

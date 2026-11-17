@@ -279,6 +279,80 @@ paths:
         '204': { description: Silindi. }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
+  /api/v1/ai/parse-appointment:
+    post:
+      summary: Doğal dille yazılan Türkçe cümleden randevu taslağı çıkar
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [prompt]
+              properties:
+                prompt: { type: string }
+                referenceDate: { type: string, format: date }
+      responses:
+        '200':
+          description: Ayrıştırılan randevu taslağı.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AppointmentDraft' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /api/v1/settings/reminders:
+    get:
+      summary: Kullanıcının randevu öncesi hatırlatma ayarını getir
+      responses:
+        '200':
+          description: Hatırlatma süresi (dakika ya da kapalıysa null).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReminderSettings' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    patch:
+      summary: Kullanıcının randevu öncesi hatırlatma ayarını güncelle
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ReminderSettings' }
+      responses:
+        '200':
+          description: Güncellenen hatırlatma süresi.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReminderSettings' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /api/v1/reminders/check:
+    post:
+      summary: Yaklaşan randevuları kontrol et ve süresi gelenler için AI özetli bildirim üret
+      responses:
+        '200':
+          description: Üretilen bildirim sayısı ve güncel bildirim listesi.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sentCount: { type: integer }
+                  notifications:
+                    type: array
+                    items: { $ref: '#/components/schemas/ReminderNotification' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /api/v1/reminders/sent:
+    get:
+      summary: Gönderilen (simüle edilen) son hatırlatma e-postalarını listele
+      responses:
+        '200':
+          description: En yeniden eskiye bildirim listesi.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/ReminderNotification' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 components:
   securitySchemes:
     bearerAuth:
@@ -404,3 +478,34 @@ components:
                 id: { type: string }
                 firstName: { type: string }
                 lastName: { type: string }
+    AppointmentDraft:
+      type: object
+      properties:
+        customerId: { type: string, nullable: true }
+        suggestedCustomer:
+          type: object
+          nullable: true
+          properties:
+            firstName: { type: string }
+            lastName: { type: string }
+        date: { type: string, format: date }
+        startTime: { type: string, example: '14:00' }
+        endTime: { type: string, example: '15:00' }
+        note: { type: string }
+    ReminderSettings:
+      type: object
+      properties:
+        reminderMinutesBefore:
+          type: integer
+          nullable: true
+          enum: [15, 30, 60, null]
+    ReminderNotification:
+      type: object
+      properties:
+        id: { type: string }
+        userId: { type: string }
+        appointmentId: { type: string }
+        recipientEmail: { type: string }
+        subject: { type: string }
+        body: { type: string }
+        sentAt: { type: string, format: date-time }

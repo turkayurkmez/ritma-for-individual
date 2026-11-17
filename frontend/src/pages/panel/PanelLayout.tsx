@@ -1,5 +1,6 @@
 import { NavLink, Outlet } from 'react-router';
 import { useAuth } from '../../auth/AuthProvider';
+import { ReminderFooter } from './ReminderFooter';
 import { TrialBanner } from './TrialBanner';
 import './PanelLayout.css';
 
@@ -30,6 +31,7 @@ export function PanelLayout() {
       <main className="panel-content">
         <Outlet />
       </main>
+      <ReminderFooter />
     </div>
     </>
   );
