@@ -8,6 +8,7 @@ export interface User {
 
 export type Gender = 'female' | 'male' | 'other' | 'undisclosed';
 export type AppointmentStatus = 'scheduled' | 'completed' | 'cancelled';
+export type ReminderMinutes = 15 | 30 | 60;
 
 export interface Customer {
   id: string;
@@ -42,6 +43,29 @@ export interface AppointmentInput {
   note?: string;
 }
 
+export interface AppointmentDraft {
+  customerId: string | null;
+  suggestedCustomer: { firstName: string; lastName: string } | null;
+  date: string;
+  startTime: string;
+  endTime: string;
+  note: string;
+}
+
+export interface ReminderSettings {
+  reminderMinutesBefore: ReminderMinutes | null;
+}
+
+export interface ReminderNotification {
+  id: string;
+  userId: string;
+  appointmentId: string;
+  recipientEmail: string;
+  subject: string;
+  body: string;
+  sentAt: string;
+}
+
 // Sözleşme testinin anahtarları karşılaştırması için örnek nesneler.
 export const sampleUser: User = { id: 'u1', email: 'a@b.c', displayName: 'Ayşe' };
 
@@ -65,4 +89,27 @@ export const sampleAppointment: Appointment = {
   status: 'scheduled',
   note: '',
   customer: { id: 'c1', firstName: 'Ali', lastName: 'Veli' },
+};
+
+export const sampleAppointmentDraft: AppointmentDraft = {
+  customerId: 'c1',
+  suggestedCustomer: { firstName: 'Ali', lastName: 'Veli' },
+  date: '2026-11-03',
+  startTime: '14:00',
+  endTime: '15:00',
+  note: 'Kontrol',
+};
+
+export const sampleReminderSettings: ReminderSettings = {
+  reminderMinutesBefore: 30,
+};
+
+export const sampleReminderNotification: ReminderNotification = {
+  id: 'n1',
+  userId: 'u1',
+  appointmentId: 'a1',
+  recipientEmail: 'a@b.c',
+  subject: 'Yaklaşan Randevu',
+  body: 'Seans özeti',
+  sentAt: '2026-11-03T13:30:00.000Z',
 };

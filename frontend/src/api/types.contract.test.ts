@@ -1,5 +1,12 @@
 import openapi from '../../../api-contract/openapi.yaml?raw';
-import { sampleAppointment, sampleCustomer, sampleUser } from './types';
+import {
+  sampleAppointment,
+  sampleAppointmentDraft,
+  sampleCustomer,
+  sampleReminderNotification,
+  sampleReminderSettings,
+  sampleUser,
+} from './types';
 
 const yaml = openapi.split(/\r?\n/);
 
@@ -51,4 +58,17 @@ test('Appointment keys, including the nested customer, match the contract', () =
   const [own, nested] = propertyGroups(schemaBlock('Appointment'));
   expect(sorted(Object.keys(sampleAppointment))).toEqual(sorted([...input, ...own]));
   expect(sorted(Object.keys(sampleAppointment.customer))).toEqual(sorted(nested));
+});
+
+test('AppointmentDraft, ReminderSettings and ReminderNotification keys match the contract', () => {
+  const [draftOwn, draftSuggested] = propertyGroups(schemaBlock('AppointmentDraft'));
+  expect(sorted(Object.keys(sampleAppointmentDraft))).toEqual(sorted(draftOwn));
+  expect(sorted(Object.keys(sampleAppointmentDraft.suggestedCustomer!))).toEqual(sorted(draftSuggested));
+
+  expect(sorted(Object.keys(sampleReminderSettings))).toEqual(
+    sorted(propertyGroups(schemaBlock('ReminderSettings'))[0]),
+  );
+  expect(sorted(Object.keys(sampleReminderNotification))).toEqual(
+    sorted(propertyGroups(schemaBlock('ReminderNotification'))[0]),
+  );
 });
