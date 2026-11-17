@@ -1,0 +1,102 @@
+.panel-footer {
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: var(--bw) solid var(--border);
+  display: grid;
+  gap: 1.25rem;
+}
+.panel-footer-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .75rem 1rem;
+  padding: 1rem;
+  border: var(--bw) solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+.panel-footer-field {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem;
+}
+.panel-footer-label {
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: .95rem;
+}
+.panel-footer-select,
+.panel-footer-button {
+  padding: .45rem .85rem;
+  border: var(--bw) solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--fg);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.panel-footer-button {
+  background: var(--accent);
+  color: var(--bg);
+}
+.panel-footer-status {
+  color: var(--muted);
+  font-weight: 600;
+  font-size: .9rem;
+}
+.panel-footer-sent {
+  display: grid;
+  gap: .75rem;
+}
+.panel-footer-heading {
+  margin: 0;
+  font-family: var(--font-head);
+  font-size: 1.05rem;
+}
+.panel-footer-empty {
+  margin: 0;
+  color: var(--muted);
+}
+.panel-footer-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: .75rem;
+}
+.panel-footer-item {
+  padding: 1rem;
+  border: var(--bw) solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  display: grid;
+  gap: .5rem;
+}
+.panel-footer-item-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: .5rem;
+}
+.panel-footer-subject {
+  font-family: var(--font-head);
+  font-weight: 700;
+}
+.panel-footer-meta {
+  color: var(--muted);
+  font-size: .9rem;
+}
+.panel-footer-body {
+  margin: 0;
+  padding: .75rem;
+  border: var(--bw) solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  font-family: inherit;
+  white-space: pre-wrap;
+  line-height: 1.45;
+}
