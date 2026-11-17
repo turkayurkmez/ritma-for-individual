@@ -3,7 +3,15 @@ import assert from 'node:assert/strict';
 import { loadConfig } from './config.js';
 
 test('defaults to port 3000 with demo accounts on outside production', () => {
-  assert.deepEqual(loadConfig({}), { port: 3000, production: false, demoAccountsEnabled: true, databaseUrl: undefined, googleClientId: undefined });
+  assert.deepEqual(loadConfig({}), {
+    port: 3000,
+    production: false,
+    demoAccountsEnabled: true,
+    databaseUrl: undefined,
+    googleClientId: undefined,
+    geminiApiKey: undefined,
+    geminiModel: 'gemini-2.5-flash',
+  });
 });
 
 test('demo accounts are off in production unless explicitly enabled', () => {
@@ -30,4 +38,11 @@ test('GOOGLE_CLIENT_ID is read when set, trimmed, and empty counts as unset', ()
     'abc.apps.googleusercontent.com',
   );
   assert.equal(loadConfig({ GOOGLE_CLIENT_ID: '' }).googleClientId, undefined);
+});
+
+test('GEMINI_API_KEY and GEMINI_MODEL are read when set, trimmed, and default when empty', () => {
+  assert.equal(loadConfig({ GEMINI_API_KEY: ' key-123 ' }).geminiApiKey, 'key-123');
+  assert.equal(loadConfig({ GEMINI_API_KEY: '   ' }).geminiApiKey, undefined);
+  assert.equal(loadConfig({ GEMINI_MODEL: ' gemini-2.5-pro ' }).geminiModel, 'gemini-2.5-pro');
+  assert.equal(loadConfig({ GEMINI_MODEL: '  ' }).geminiModel, 'gemini-2.5-flash');
 });

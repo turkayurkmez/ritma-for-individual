@@ -6,6 +6,10 @@ export interface Config {
   databaseUrl: string | undefined;
   /** Google OAuth istemci kimliği; boşsa Google ile giriş kapalıdır. */
   googleClientId: string | undefined;
+  /** Google Gemini API anahtarı; boşsa yerel yedek AI ayrıştırıcı ve özetleyici kullanılır. */
+  geminiApiKey: string | undefined;
+  /** Google Gemini model adı; boşsa 'gemini-2.5-flash' kullanılır. */
+  geminiModel: string;
 }
 
 export function loadConfig(env: NodeJS.ProcessEnv): Config {
@@ -17,5 +21,7 @@ export function loadConfig(env: NodeJS.ProcessEnv): Config {
     demoAccountsEnabled: demo === 'true' ? true : demo === 'false' ? false : !production,
     databaseUrl: env.DATABASE_URL || undefined,
     googleClientId: env.GOOGLE_CLIENT_ID?.trim() || undefined,
+    geminiApiKey: env.GEMINI_API_KEY?.trim() || undefined,
+    geminiModel: env.GEMINI_MODEL?.trim() || 'gemini-2.5-flash',
   };
 }
