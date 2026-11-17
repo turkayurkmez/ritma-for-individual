@@ -8,25 +8,34 @@ import { statusLabel, STATUSES } from '../../../lib/labels';
 import { useApi } from '../../../lib/useApi';
 import './AppointmentForm.css';
 
+export interface AppointmentFormDraft {
+  customerId?: string;
+  date?: string;
+  startTime?: string;
+  endTime?: string;
+  note?: string;
+}
+
 interface AppointmentFormProps {
   appointment?: Appointment;
+  draft?: AppointmentFormDraft;
   defaultDate: string;
   onSaved: () => void;
   onCancel: () => void;
 }
 
-export function AppointmentForm({ appointment, defaultDate, onSaved, onCancel }: AppointmentFormProps) {
-  const [customerId, setCustomerId] = useState(appointment?.customerId ?? '');
-  const [date, setDate] = useState(appointment?.date ?? defaultDate);
-  const [startTime, setStartTime] = useState(appointment?.startTime ?? '');
-  const [endTime, setEndTime] = useState(appointment?.endTime ?? '');
+export function AppointmentForm({ appointment, draft, defaultDate, onSaved, onCancel }: AppointmentFormProps) {
+  const [customerId, setCustomerId] = useState(appointment?.customerId ?? draft?.customerId ?? '');
+  const [date, setDate] = useState(appointment?.date ?? draft?.date ?? defaultDate);
+  const [startTime, setStartTime] = useState(appointment?.startTime ?? draft?.startTime ?? '');
+  const [endTime, setEndTime] = useState(appointment?.endTime ?? draft?.endTime ?? '');
   const [status, setStatus] = useState<AppointmentStatus>(appointment?.status ?? 'scheduled');
-  const [note, setNote] = useState(appointment?.note ?? '');
+  const [note, setNote] = useState(appointment?.note ?? draft?.note ?? '');
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const inFlight = useRef(false);
   // Bitişi kullanıcı elle değiştirdiyse başlangıç değişince ezilmez; düzenlemede hiç otomatik doldurulmaz.
-  const endEdited = useRef(Boolean(appointment));
+  const endEdited = useRef(Boolean(appointment || draft?.endTime));
   const customers = useApi(() => listCustomers(), []);
 
   const activeCustomers = customers.data ?? [];

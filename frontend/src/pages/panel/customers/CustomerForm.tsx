@@ -7,13 +7,15 @@ import './CustomerForm.css';
 
 interface CustomerFormProps {
   customer?: Customer;
-  onSaved: () => void;
+  initialDraft?: { firstName: string; lastName: string };
+  hint?: string;
+  onSaved: (savedCustomer: Customer) => void;
   onCancel: () => void;
 }
 
-export function CustomerForm({ customer, onSaved, onCancel }: CustomerFormProps) {
-  const [firstName, setFirstName] = useState(customer?.firstName ?? '');
-  const [lastName, setLastName] = useState(customer?.lastName ?? '');
+export function CustomerForm({ customer, initialDraft, hint, onSaved, onCancel }: CustomerFormProps) {
+  const [firstName, setFirstName] = useState(customer?.firstName ?? initialDraft?.firstName ?? '');
+  const [lastName, setLastName] = useState(customer?.lastName ?? initialDraft?.lastName ?? '');
   const [birthDate, setBirthDate] = useState(customer?.birthDate ?? '');
   const [gender, setGender] = useState<Gender>(customer?.gender ?? 'undisclosed');
   const [error, setError] = useState('');
@@ -33,9 +35,8 @@ export function CustomerForm({ customer, onSaved, onCancel }: CustomerFormProps)
       gender,
     };
     try {
-      if (customer) await updateCustomer(customer.id, input);
-      else await createCustomer(input);
-      onSaved();
+      const saved = customer ? await updateCustomer(customer.id, input) : await createCustomer(input);
+      onSaved(saved);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Bir sorun oluştu.');
       setSubmitting(false);
@@ -47,6 +48,7 @@ export function CustomerForm({ customer, onSaved, onCancel }: CustomerFormProps)
   return (
     <Modal title={customer ? 'Müşteriyi düzenle' : 'Müşteri ekle'} onClose={onCancel}>
       <form className="customer-form" onSubmit={handleSubmit}>
+        {hint && <p className="customer-form-hint">{hint}</p>}
         <div>
           <label htmlFor="customer-first-name">Ad</label>
           <input id="customer-first-name" value={firstName} onChange={(e) => setFirstName(e.target.value)} />

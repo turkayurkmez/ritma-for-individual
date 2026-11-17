@@ -1,18 +1,24 @@
-import { useState } from 'react';
+import { useState, type FormEvent } from 'react';
 import { useSearchParams } from 'react-router';
+import { parseAppointmentPrompt } from '../../../api/ai';
 import { deleteAppointment, listAppointments, updateAppointment } from '../../../api/appointments';
-import type { Appointment } from '../../../api/types';
+import type { Appointment, Customer } from '../../../api/types';
 import { ConfirmDialog } from '../../../components/ConfirmDialog';
 import { addDays, formatDayLong, todayString } from '../../../lib/date';
 import { statusLabel } from '../../../lib/labels';
 import { useApi } from '../../../lib/useApi';
 import { CustomerForm } from '../customers/CustomerForm';
-import { AppointmentForm } from './AppointmentForm';
+import { AppointmentForm, type AppointmentFormDraft } from './AppointmentForm';
 import './DailyPage.css';
 
 type Dialog =
-  | { kind: 'form'; appointment?: Appointment }
-  | { kind: 'customer' }
+  | { kind: 'form'; appointment?: Appointment; draft?: AppointmentFormDraft }
+  | {
+      kind: 'customer';
+      initialDraft?: { firstName: string; lastName: string };
+      hint?: string;
+      pendingAppointmentDraft?: AppointmentFormDraft;
+    }
   | { kind: 'cancel'; appointment: Appointment }
   | { kind: 'delete'; appointment: Appointment }
   | null;
@@ -28,6 +34,8 @@ export function DailyPage() {
   const { data, loading, error, reload } = useApi(() => listAppointments(date, date), [date]);
   const [dialog, setDialog] = useState<Dialog>(null);
   const [actionError, setActionError] = useState('');
+  const [aiPrompt, setAiPrompt] = useState('');
+  const [aiLoading, setAiLoading] = useState(false);
 
   function goTo(next: string) {
     setParams({ tarih: next });
@@ -49,6 +57,51 @@ export function DailyPage() {
     }
   }
 
+  async function handleAiSubmit(event: FormEvent) {
+    event.preventDefault();
+    const trimmed = aiPrompt.trim();
+    if (!trimmed || aiLoading) return;
+    setAiLoading(true);
+    setActionError('');
+    try {
+      const parsed = await parseAppointmentPrompt(trimmed, date);
+      const apptDraft: AppointmentFormDraft = {
+        customerId: parsed.customerId ?? undefined,
+        date: parsed.date,
+        startTime: parsed.startTime,
+        endTime: parsed.endTime,
+        note: parsed.note,
+      };
+      setAiPrompt('');
+      if (!parsed.customerId && parsed.suggestedCustomer) {
+        const fullName = `${parsed.suggestedCustomer.firstName} ${parsed.suggestedCustomer.lastName}`;
+        setDialog({
+          kind: 'customer',
+          initialDraft: parsed.suggestedCustomer,
+          hint: `${fullName} kayıtlı değil. Önce müşteriyi ekleyin, ardından randevu formuna geçilecek.`,
+          pendingAppointmentDraft: apptDraft,
+        });
+      } else {
+        setDialog({ kind: 'form', draft: apptDraft });
+      }
+    } catch (e) {
+      setActionError(e instanceof Error ? e.message : 'Komut ayrıştırılamadı.');
+    } finally {
+      setAiLoading(false);
+    }
+  }
+
+  function handleCustomerSaved(savedCustomer: Customer) {
+    if (dialog?.kind === 'customer' && dialog.pendingAppointmentDraft) {
+      setDialog({
+        kind: 'form',
+        draft: { ...dialog.pendingAppointmentDraft, customerId: savedCustomer.id },
+      });
+    } else {
+      setDialog(null);
+    }
+  }
+
   return (
     <section className="daily">
       <div className="daily-nav">
@@ -60,6 +113,19 @@ export function DailyPage() {
         <h1 className="daily-title">{formatDayLong(date)}</h1>
         <button type="button" className="cta" onClick={() => setDialog({ kind: 'form' })}>Randevu ekle</button>
       </div>
+
+      <form className="daily-ai-bar" onSubmit={handleAiSubmit}>
+        <input
+          className="daily-ai-input"
+          aria-label="Hızlı randevu komutu"
+          placeholder="Örn: Yarın 14:00 Ali Veli kontrol randevusu"
+          value={aiPrompt}
+          onChange={(e) => setAiPrompt(e.target.value)}
+        />
+        <button type="submit" className="daily-nav-button daily-ai-submit" disabled={aiLoading}>
+          {aiLoading ? 'Ayrıştırılıyor…' : 'Oluştur'}
+        </button>
+      </form>
 
       {actionError && <p className="daily-error" role="alert">{actionError}</p>}
 
@@ -125,13 +191,19 @@ export function DailyPage() {
       {dialog?.kind === 'form' && (
         <AppointmentForm
           appointment={dialog.appointment}
+          draft={dialog.draft}
           defaultDate={date}
           onSaved={handleSaved}
           onCancel={() => setDialog(null)}
         />
       )}
       {dialog?.kind === 'customer' && (
-        <CustomerForm onSaved={() => setDialog(null)} onCancel={() => setDialog(null)} />
+        <CustomerForm
+          initialDraft={dialog.initialDraft}
+          hint={dialog.hint}
+          onSaved={handleCustomerSaved}
+          onCancel={() => setDialog(null)}
+        />
       )}
       {dialog?.kind === 'cancel' && (
         <ConfirmDialog
