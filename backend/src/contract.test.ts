@@ -28,13 +28,18 @@ test('the OpenAPI contract documents exactly the routes the server exposes', () 
     'GET /api/v1/customers',
     'GET /api/v1/customers/{id}',
     'GET /api/v1/health',
+    'GET /api/v1/reminders/sent',
+    'GET /api/v1/settings/reminders',
     'PATCH /api/v1/appointments/{id}',
     'PATCH /api/v1/customers/{id}',
+    'PATCH /api/v1/settings/reminders',
+    'POST /api/v1/ai/parse-appointment',
     'POST /api/v1/appointments',
     'POST /api/v1/auth/google',
     'POST /api/v1/auth/login',
     'POST /api/v1/auth/logout',
     'POST /api/v1/customers',
+    'POST /api/v1/reminders/check',
   ]);
 });
 
