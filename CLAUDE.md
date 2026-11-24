@@ -56,6 +56,14 @@ Ritma, serbest çalışan hizmet sağlayıcılar (danışman, koç, eğitmen, di
 - Sunucuyu arka planda (`npm run dev`) başlatıp tarayıcıya gitmeden önce `Ritma http://localhost:3000 adresinde çalışıyor` satırını bekle (`curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/`); hazır olmadan açılan sekme hata sayfası gösterir. `npm run dev` izleme modunda olduğundan dosya değişince sunucu yeniden başlar ve bellekteki oturum/veri silinir; tarayıcı testinde tekrar giriş gerekebilir. İş bitince sunucuyu ve sekmeyi kapat (Windows'ta: `netstat -ano | grep ":3000 " | grep LISTENING` ile PID'i bul, `taskkill //PID <pid> //F`).
 - Tırnak/apostrof içeren uzun dosyaları `cat <<EOF` ile değil Write aracıyla yaz; kabuk komutu ayrıştırma hatasıyla hiç dosya yazmadan çökebilir.
 
+## Android
+
+`android/` Kotlin + Jetpack Compose uygulamasıdır; tasarım: `docs/design-system.md`. Derleme ve testler host'ta değil devContainer'da (`.devcontainer/`, Docker Compose servisi `android`) koşar; kod host'ta kalır ve bağlanır. İmaj `linux/amd64`'tür (Android SDK araçları x86-64; Apple Silicon'da Rosetta ile çalışır, ilk derleme ~2,5 dk).
+
+- Ayağa kaldır (`.devcontainer/` içinde): `docker compose up -d --build`. Komut koştur: `docker compose exec android ./gradlew assembleDebug` (APK: `android/app/build/outputs/apk/debug/`), testler `testDebugUnitTest`. Kapat: `docker compose down` (Gradle önbelleği `ritma-gradle-cache` volume'unda kalır).
+- VS Code'da "Reopen in Container" aynı servisi kullanır.
+- Emülatör ve cihaza kurulum container'da yapılmaz; APK host'taki `adb install` ya da Android Studio ile kurulur.
+
 ## Kurallar
 
 - Dosya ve klasör adları İngilizce olur (örnek: `index.html`, `styles.css`, `script.js`).

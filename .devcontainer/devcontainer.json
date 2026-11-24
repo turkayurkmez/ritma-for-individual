@@ -1,0 +1,20 @@
+{
+  "name": "Ritma Android",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "android",
+  "workspaceFolder": "/workspaces/ritma",
+  "remoteUser": "vscode",
+  "shutdownAction": "stopCompose",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "fwcd.kotlin",
+        "vscjava.vscode-gradle",
+        "redhat.java"
+      ],
+      "settings": {
+        "java.jdt.ls.java.home": "/opt/java/openjdk"
+      }
+    }
+  }
+}
