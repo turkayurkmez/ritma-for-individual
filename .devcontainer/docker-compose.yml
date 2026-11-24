@@ -1,0 +1,19 @@
+services:
+  android:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    platform: linux/amd64
+    image: ritma-android-dev
+    working_dir: /workspaces/ritma/android
+    command: sleep infinity
+    volumes:
+      # Kod host'ta kalır, container'a bağlanır.
+      - ..:/workspaces/ritma:cached
+      # Gradle önbelleği (indirilen bağımlılıklar) container silinse de kalır.
+      - ritma-gradle-cache:/home/vscode/.gradle
+    environment:
+      GRADLE_OPTS: "-Dorg.gradle.daemon=false -Xmx2g"
+
+volumes:
+  ritma-gradle-cache:
