@@ -81,6 +81,8 @@ fun RitmaButton(
                 onClick()
             }
             .padding(bottom = RitmaSize.lipButton),
+        // weight/fillMaxWidth ile gelen asgari genişlik yüze de geçsin (eşit genişlikli düğmeler).
+        propagateMinConstraints = true,
     ) {
         Box(
             Modifier
